@@ -111,6 +111,29 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .log{font:13px var(--mono);white-space:pre-wrap;background:var(--bg);padding:10px;border-radius:6px;border:1px solid var(--line);max-height:220px;overflow:auto}
 .history{font-size:13px;padding-left:0;list-style:none}
 .history li{padding:6px 0;border-bottom:1px solid var(--line)}
+
+/* ===== 추가: 내비, 파이프라인, 분석 ===== */
+.nav{margin-left:auto;display:flex;gap:4px}
+.navbtn{padding:5px 12px;font-size:13px;border-radius:999px}
+.navbtn.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.pipeline{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.pstep{padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.pstep.run{border-color:var(--accent);color:var(--accent);font-weight:700}
+.pstep.ok{border-color:var(--ok);color:var(--ok)}
+.pstep.fail{border-color:var(--rec);color:var(--rec)}
+.parrow{color:var(--muted)}
+.pmsg{margin-left:auto;color:var(--muted)}
+.why{font-size:12px;color:var(--accent);margin-top:4px;line-height:1.5}
+.qa .qitem{border-left:3px solid var(--ok);padding:6px 10px;margin-bottom:8px;font-size:14px;background:var(--bg);border-radius:0 6px 6px 0}
+.qa .qitem.miss{border-left-color:var(--rec)}
+.qhead{margin-bottom:4px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;margin-right:4px;font-weight:700}
+.tag.ok{background:var(--ok);color:#fff}.tag.bad{background:var(--rec);color:#fff}
+.sw{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px}
+@media (max-width:600px){.sw{grid-template-columns:1fr}}
+.sw ul{margin:4px 0 0;padding-left:18px}.sw li{margin-bottom:4px}
+.recrow{cursor:pointer}.recrow:hover{background:var(--bg)}
+button.danger{color:var(--rec);border-color:var(--rec)}
 </style>
 </head>
 <body>
@@ -126,17 +149,18 @@ button:disabled{opacity:.45;cursor:not-allowed}
 <div class="wrap">
 <header>
   <h1>연세대 제시문 면접 현장녹화 모의시험</h1>
-  <span class="sub">고사장 태블릿 화면을 재현: 테스트 녹화 → 지문 숙지 8분 → 자동 녹화 최대 5분(최소 2분) → 확인, 평가</span>
+  <span class="sub">테스트 녹화 → 지문 숙지 8분 → 자동 녹화 최대 5분(최소 2분) → 전사, AI 평가, 기록</span>
+  <nav class="nav"><button class="navbtn on" data-v="exam">시험</button><button class="navbtn" data-v="records">기록</button><button class="navbtn" data-v="setup">서버 설정</button></nav>
 </header>
 
-<!-- ① 설정 -->
+<!-- ===== 시험 설정 ===== -->
 <section id="s0" class="grid">
   <div class="panel">
     <h2>응시 정보</h2>
-    <label for="sname">학생 이름 또는 수험번호 (기록용, 녹화에서는 말하지 않음)</label>
-    <input id="sname" type="text" placeholder="예: 2027-활우-03">
-    <label for="sess">화면 상단 표시 문구 (실제 화면: 날짜(오전/오후) 전형명 면접녹화시험)</label>
-    <input id="sess" type="text" placeholder="예: 10월16일(오전) 활동우수형 면접녹화시험(MOCK)">
+    <label for="sname">학생 이름 또는 식별 번호 (기록은 이 이름으로 묶입니다)</label>
+    <input id="sname" type="text" list="nameList" placeholder="예: 김연세 또는 2027-03"><datalist id="nameList"></datalist>
+    <label for="sess">화면 상단 표시 문구</label>
+    <input id="sess" type="text" placeholder="예: 10월17일(오전) 활동우수형 면접녹화시험(MOCK)">
     <label for="qset">문항 세트 이름</label>
     <input id="qset" type="text" placeholder="예: 2025 인문 기출">
     <div class="row" style="margin-top:12px">
@@ -145,38 +169,60 @@ button:disabled{opacity:.45;cursor:not-allowed}
       <div style="flex:1"><label for="tmin">최소 면접 시간(분)</label><input id="tmin" type="number" min="0" max="30" value="2"></div>
     </div>
     <label class="chk"><input id="skipPractice" type="checkbox"> 테스트 녹화(본인 확인) 건너뛰기</label>
-    <label class="chk"><input id="skipPrep" type="checkbox"> 지문 숙지 건너뛰고 바로 녹화 (준비를 따로 마친 경우)</label>
-    <label class="chk"><input id="showQ" type="checkbox"> 숙지 시간에 문제지를 화면에 함께 표시 (실제 시험은 종이 문제지만 사용)</label>
+    <label class="chk"><input id="skipPrep" type="checkbox"> 지문 숙지 건너뛰고 바로 녹화</label>
+    <label class="chk"><input id="showQ" type="checkbox"> 숙지 시간에 문제지를 화면에 함께 표시</label>
     <label class="chk"><input id="beep" type="checkbox" checked> 1분 전, 10초 전 알림음</label>
-    <label class="chk"><input id="stt" type="checkbox" checked> 답변 음성을 실시간으로 글로 전사 (Chrome, Edge, 인터넷 필요)</label>
-    <div class="alert" id="sttWarn" hidden>이 브라우저는 음성 인식을 지원하지 않아 전사가 꺼집니다. Chrome 또는 Edge를 쓰세요.</div>
-    <div class="alert" id="secWarn" hidden>카메라 녹화는 https:// 또는 파일을 직접 연 file:// 주소에서만 동작합니다.</div>
+    <label class="chk"><input id="autoAi" type="checkbox" checked> 녹화가 끝나면 자동으로 전사, AI 평가, 서버 저장</label>
+    <div class="alert" id="srvWarn" hidden>서버 주소가 설정되지 않아 전사와 AI 평가, 기록 저장이 꺼집니다. "서버 설정" 탭에서 입력하세요.</div>
+    <div class="alert" id="secWarn" hidden>카메라 녹화는 https:// 주소에서만 동작합니다.</div>
     <div class="alert err" id="apiWarn" hidden>이 브라우저는 MediaRecorder를 지원하지 않습니다. 최신 Chrome 또는 Edge에서 열어 주세요.</div>
+    <div class="row" style="margin-top:16px">
+      <button class="primary" id="btnStart" style="font-size:16px;padding:12px 26px">시험 화면 열기</button>
+    </div>
   </div>
   <div class="panel">
-    <h2>문제지 (선택)</h2>
-    <label for="qtext">제시문과 문항 텍스트. "문제지를 화면에 표시"를 켰을 때만 쓰입니다.</label>
-    <textarea id="qtext" placeholder="실전처럼 종이 문제지를 쓰면 비워 두세요."></textarea>
-    <label for="qimg">또는 문제지 파일 (PDF, JPG, PNG 여러 장 가능)</label>
+    <h2>문항 자료와 평가 기준 <span class="note" style="display:inline;margin:0">(서버에 저장되어 모든 기기에서 공유)</span></h2>
+    <label for="qtext">제시문과 문항 텍스트 (AI 평가의 근거. 붙여 넣기 권장)</label>
+    <textarea id="qtext" placeholder="[제시문 (가)] ...&#10;[문항 1] ..."></textarea>
+    <label for="qimg">문제지 파일 (PDF, JPG, PNG. 화면 표시용, 이 기기에서만 사용)</label>
     <input id="qimg" type="file" accept="application/pdf,image/*" multiple>
     <div class="note" id="qfileNote"></div>
     <div class="alert err" id="pdfErr" hidden></div>
-    <h2 style="margin-top:18px">진행 순서</h2>
-    <div class="flow">
-      1. 카메라, 마이크 확인<br>
-      2. 카운트다운 3초 → 테스트 녹화 10초 (화면 문장을 읽음)<br>
-      3. 카운트다운 3초 → 지문 숙지 8분 (종이 문제지 개봉, 구상지 작성)<br>
-      4. 숙지 종료 시 별도 조작 없이 자동 녹화. 왼쪽 위에 남은 면접 시간과 최소 면접 시간 표시<br>
-      5. 최소 시간 경과 후 왼쪽 아래 버튼으로 종료 가능. 시간 만료 시 자동 종료<br>
-      6. 녹화 확인과 평가
-    </div>
-    <div class="row" style="margin-top:16px">
-      <button class="primary" id="btnStart">시험 화면 열기</button>
-    </div>
+    <label for="keyPoints">채점 포인트, 모범답안 요지, 꼭 언급해야 할 요소 (문항별로 적어 주세요)</label>
+    <textarea id="keyPoints" placeholder="예: 1번: (가)에서 다윈은 '적합', 스펜서는 '우열'로 구분. 2번: (나)의 주장이 스펜서식 해석에 기대고 있음을 지적하고 (다)의 위계적 사고와 연결."></textarea>
+    <label for="rubricText">평가 기준 (한 줄에 하나, "항목명: 설명". 항목당 5점)</label>
+    <textarea id="rubricText" style="min-height:150px;font-size:13px"></textarea>
+    <div class="row" style="margin-top:10px"><button class="primary" id="btnSaveCfg">서버에 저장</button><button id="btnLoadCfg">서버에서 다시 불러오기</button><span class="note" id="cfgStatus" style="margin:0"></span></div>
   </div>
 </section>
 
-<!-- ② 태블릿 시험 화면 -->
+<!-- ===== 서버 설정 ===== -->
+<section id="sSetup" hidden>
+  <div class="panel" style="max-width:720px">
+    <h2>중계 서버</h2>
+    <p class="note" style="margin-top:0">OpenAI 키와 평가 기록은 Cloudflare Workers에 올린 중계 서버에 보관됩니다. 서버 주소는 이 기기에 저장되며, 서버 인증에는 입장 암호가 함께 쓰입니다.</p>
+    <label for="srvUrl">서버 주소 (예: https://ys-mock.아이디.workers.dev)</label>
+    <input id="srvUrl" type="text" placeholder="https://....workers.dev">
+    <div class="row" style="margin-top:10px"><button class="primary" id="btnSrvSave">저장하고 연결 확인</button><span class="note" id="srvStatus" style="margin:0"></span></div>
+    <h2 style="margin-top:22px">상태</h2>
+    <div class="log" id="srvInfo">아직 확인하지 않음</div>
+  </div>
+</section>
+
+<!-- ===== 기록 ===== -->
+<section id="sRec" hidden>
+  <div class="grid" style="grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)">
+    <div class="panel">
+      <h2>저장된 기록</h2>
+      <div class="row"><select id="recStudent" style="flex:1"><option value="">전체 학생</option></select><button id="btnRecReload">새로고침</button></div>
+      <div id="trendBox" hidden style="margin-top:12px"><div class="note" style="margin:0 0 4px" id="trendTitle"></div><canvas id="trend" height="140" style="width:100%;max-width:100%"></canvas></div>
+      <ul class="history" id="recList"><li class="note">서버를 설정하면 여기에 기록이 표시됩니다.</li></ul>
+    </div>
+    <div class="panel" id="recDetail"><h2>기록 상세</h2><div class="note">왼쪽에서 기록을 고르세요.</div></div>
+  </div>
+</section>
+
+<!-- ===== 태블릿 시험 화면 ===== -->
 <div id="tab" hidden>
   <div class="tbar">
     <div><span class="uni">연세대학교</span><span class="sess" id="sessLbl">면접녹화시험</span></div>
@@ -189,8 +235,9 @@ button:disabled{opacity:.45;cursor:not-allowed}
   </div>
 </div>
 
-<!-- ③ 확인 및 평가 -->
+<!-- ===== 결과와 평가 ===== -->
 <section id="s3" hidden>
+  <div class="pipeline" id="pipe" hidden></div>
   <div class="grid">
     <div class="panel">
       <h2>녹화 확인</h2>
@@ -202,37 +249,51 @@ button:disabled{opacity:.45;cursor:not-allowed}
         <div><b id="kPrep">--</b><small>숙지 시간</small></div>
       </div>
       <div class="row">
-        <button id="btnDl">영상 파일 저장 (.webm)</button>
-        <button id="btnDlReport">평가 기록 저장 (.txt)</button>
+        <button id="btnDl">영상 저장</button>
+        <button id="btnDlAudio">음성만 저장</button>
+        <button id="btnDlReport">보고서 저장 (.txt)</button>
         <button id="btnAgain">같은 설정으로 다시</button>
         <button id="btnNew">설정으로</button>
       </div>
-      <div class="note">영상은 이 컴퓨터에만 저장되고 외부로 전송되지 않습니다.</div>
-      <h2 style="margin-top:18px">답변 전사</h2>
-      <div class="kpi">
-        <div><b id="kChars">--</b><small>전사 글자 수 (공백 제외)</small></div>
+      <div class="note">영상과 음성 파일은 이 기기에만 남습니다. 서버에는 전사문과 평가 결과만 저장됩니다.</div>
+
+      <h2 style="margin-top:18px">말하기 지표</h2>
+      <div class="kpi" id="metricBox">
+        <div><b id="kChars">--</b><small>글자 수 (공백 제외)</small></div>
         <div><b id="kRate">--</b><small>분당 글자 수</small></div>
-        <div><b id="kSeg">--</b><small>문장 단위 수</small></div>
+        <div><b id="kPause">--</b><small>1.5초 이상 침묵</small></div>
+        <div><b id="kLongest">--</b><small>가장 긴 침묵</small></div>
+        <div><b id="kFill">--</b><small>군말 추정</small></div>
       </div>
+      <div class="note" id="metricNote" style="margin-top:0">분당 글자 수는 한국어 면접 답변에서 대체로 250~350자 범위가 안정적이라는 지도 경험칙이며 공식 기준은 아닙니다. 군말은 전사문에서 "음, 어, 그, 약간, 일단" 등을 센 추정치이고, Whisper가 군말을 생략하는 경우가 많아 실제보다 적게 잡힙니다.</div>
+
+      <h2 style="margin-top:18px">답변 전사</h2>
       <div class="note" id="trNote" style="margin-top:0"></div>
-      <label for="transcript">자동 전사 결과. 인식 오류는 영상을 보며 직접 고치세요. 평가 기록(.txt)에 함께 저장됩니다.</label>
-      <textarea id="transcript" style="min-height:200px;font-size:14px"></textarea>
-      <div class="row" style="margin-top:8px"><button id="btnTrTime">시간 표시 포함으로 다시 채우기</button><button id="btnTrCopy">전사 복사</button></div>
+      <textarea id="transcript" style="min-height:200px;font-size:14px" placeholder="전사 결과가 여기에 들어갑니다. 다른 도구로 전사했다면 붙여 넣어도 됩니다."></textarea>
+      <div class="row" style="margin-top:8px"><button id="btnAiTr">전사 다시 실행</button><button id="btnTrTime">시간 표시 포함</button><button id="btnTrCopy">전사 복사</button></div>
       <h2 style="margin-top:18px">진행 기록</h2>
       <div class="log" id="log"></div>
     </div>
     <div class="panel">
-      <h2>평가표</h2>
-      <p class="note" style="margin-top:0">입학처 공식 채점 기준이 아니라 지도용으로 구성한 기준입니다. 1점 미흡, 5점 우수.</p>
+      <h2>AI 평가</h2>
+      <div class="row" style="margin-bottom:10px"><button class="primary" id="btnAiEval">AI 평가 다시 실행</button><button class="primary" id="btnSave">서버에 저장</button><span class="note" id="aiStatus" style="margin:0"></span></div>
+      <div class="row" style="justify-content:space-between;margin-bottom:6px"><div>합계 <span class="total" id="total">0</span> <span class="note" style="display:inline">/ <span id="totalMax">40</span></span></div></div>
       <table class="rubric" id="rubric"></table>
-      <div class="row" style="margin-top:12px;justify-content:space-between">
-        <div>합계 <span class="total" id="total">0</span> <span class="note" style="display:inline">/ 40</span></div>
-        <button class="primary" id="btnSave">평가 저장</button>
-      </div>
-      <label for="comment">종합 코멘트</label>
-      <textarea id="comment" placeholder="잘한 점, 보완할 점, 다음 연습 과제"></textarea>
-      <h2 style="margin-top:18px">이 컴퓨터에 저장된 이전 기록</h2>
-      <ul class="history" id="history"></ul>
+      <p class="note">AI 점수는 초안입니다. 점수를 직접 바꾸고 "서버에 저장"을 누르면 수정본이 기록됩니다.</p>
+
+      <h2 style="margin-top:18px">문항별 분석</h2>
+      <div id="qAnalysis" class="qa"><div class="note">AI 평가 후 표시됩니다.</div></div>
+
+      <h2 style="margin-top:18px">강점과 개선점</h2>
+      <div id="swBox" class="sw"><div class="note">AI 평가 후 표시됩니다.</div></div>
+
+      <h2 style="margin-top:18px">이전 회차와 비교</h2>
+      <div id="growthBox" class="note" style="margin-top:0">같은 이름으로 저장된 이전 기록이 있으면 비교합니다.</div>
+
+      <label for="comment" style="margin-top:14px">종합 코멘트 (AI 초안, 수정 가능)</label>
+      <textarea id="comment" style="min-height:140px"></textarea>
+      <label for="tnote">선생님 메모 (영상을 보고 느낀 태도, 시선, 발음 등)</label>
+      <textarea id="tnote" style="min-height:80px"></textarea>
     </div>
   </div>
 </section>
@@ -244,22 +305,91 @@ const $=id=>document.getElementById(id);
 // ---------- 입장 암호 ----------
 const GATE_HASH='7db90541881297a5e338305901162ae9d023eaeac161f451d088c1cf9bbf0dc9';
 async function sha(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
-try{ if(sessionStorage.getItem('ys_gate')===GATE_HASH) $('gate').hidden=true; }catch(e){}
+let PW='';
+try{ if(sessionStorage.getItem('ys_gate')===GATE_HASH){ PW=sessionStorage.getItem('ys_pw')||''; $('gate').hidden=true; setTimeout(afterGate,0); } }catch(e){}
 $('gateForm').addEventListener('submit',async e=>{ e.preventDefault(); const v=$('gatePw').value.trim(); if(!v) return;
   let h=''; try{ h=await sha(v); }catch(err){ $('gateMsg').textContent='이 브라우저에서는 암호 확인을 할 수 없습니다. https 주소로 열어 주세요.'; return; }
-  if(h===GATE_HASH){ $('gate').hidden=true; try{ sessionStorage.setItem('ys_gate',GATE_HASH); }catch(err){} }
+  if(h===GATE_HASH){ PW=v; $('gate').hidden=true; try{ sessionStorage.setItem('ys_gate',GATE_HASH); sessionStorage.setItem('ys_pw',v); }catch(err){} afterGate(); }
   else { $('gateMsg').textContent='암호가 맞지 않습니다.'; $('gatePw').value=''; $('gatePw').focus(); } });
-const S={ stream:null, rec:null, chunks:[], blob:null, log:[], q2At:null, ansSec:0, prepSec:0, endMode:'', timer:null, audioCtx:null, qPages:[], aborted:false, tr:[], trOn:false, trErr:'' };
+
+const S={ stream:null, rec:null, chunks:[], blob:null, log:[], q2At:null, ansSec:0, prepSec:0, endMode:'', timer:null, audioCtx:null, qPages:[], aborted:false,
+  tr:[], trSrc:'', arec:null, achunks:[], audioBlob:null, ai:null, metrics:{}, recId:null, prior:[] };
 
 if(!window.isSecureContext) $('secWarn').hidden=false;
 if(!window.MediaRecorder || !navigator.mediaDevices) $('apiWarn').hidden=false;
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!SR){ $('stt').checked=false; $('stt').disabled=true; $('sttWarn').hidden=false; }
+
+const DEFAULT_RUBRIC=[
+  ['제시문 이해','각 제시문의 핵심 주장과 제시문 간 관계(대립, 보완, 사례)를 정확히 파악했는가'],
+  ['문항 요구 충족','문항이 묻는 바에 직접 답했는가. 문항별 답변 누락이 없는가'],
+  ['논리와 근거','주장과 근거가 연결되고, 제시문의 내용을 근거로 활용했는가'],
+  ['답변 구성','문항 순서와 전환이 명확하고 마무리가 있는가'],
+  ['전달력','군말, 반복, 끊김이 적고 문장이 완결되는가 (전사문 기준)'],
+  ['시간 활용','답변이 너무 짧거나 길지 않고 문항별 분량이 균형 잡혔는가'],
+  ['자기 생각','제시문 요약에 그치지 않고 자신의 평가나 적용을 덧붙였는가'],
+  ['규칙 준수','이름, 가족, 학교 언급 없음. 문항과 무관한 발언 없음']
+];
+function RUBRIC_LIST(){ const l=$('rubricText').value.split('\n').map(x=>x.trim()).filter(Boolean).map(l=>{ const i=l.indexOf(':'); return i>0?[l.slice(0,i).trim(),l.slice(i+1).trim()]:[l,'']; }); return l.length?l:DEFAULT_RUBRIC; }
+let RUBRIC=DEFAULT_RUBRIC;
 
 function addLog(msg){ const ts=new Date().toTimeString().slice(0,8); S.log.push(ts+'  '+msg); $('log').textContent=S.log.join('\n'); }
 function fmt(sec){ sec=Math.max(0,Math.round(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
 function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function beep(n){ if(!$('beep').checked) return; try{ S.audioCtx=S.audioCtx||new (window.AudioContext||window.webkitAudioContext)(); const ctx=S.audioCtx; for(let i=0;i<n;i++){ const o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.value=880; o.connect(g); g.connect(ctx.destination); const t=ctx.currentTime+i*0.25; g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.18); o.start(t); o.stop(t+0.2);} }catch(e){} }
+
+// ---------- 서버 통신 ----------
+function srv(){ try{ return (localStorage.getItem('ys_server')||'').replace(/\/+$/,''); }catch(e){ return ''; } }
+async function api(path,opt={}){
+  const base=srv(); if(!base) throw new Error('서버 주소가 설정되지 않았습니다.');
+  const headers=Object.assign({'X-Gate':GATE_HASH},opt.headers||{});
+  if(opt.json){ headers['Content-Type']='application/json'; opt.body=JSON.stringify(opt.json); }
+  const r=await fetch(base+path,{method:opt.method||'GET',headers,body:opt.body});
+  let j=null; const t=await r.text(); try{ j=JSON.parse(t); }catch(e){ j={error:'서버 응답을 해석하지 못했습니다: '+t.slice(0,120)}; }
+  if(!r.ok) throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+function hasServer(){ return !!srv(); }
+
+// ---------- 화면 전환 ----------
+function view(v){
+  $('s0').hidden=v!=='exam'; $('s3').hidden=true; $('sRec').hidden=v!=='records'; $('sSetup').hidden=v!=='setup';
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(v==='records') loadRecords();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>view(b.dataset.v)));
+
+// ---------- 설정 (서버 공유) ----------
+function localCfg(){ try{ return JSON.parse(localStorage.getItem('ys_cfg')||'{}'); }catch(e){ return {}; } }
+function applyCfg(c){
+  if(c.rubric) $('rubricText').value=c.rubric; if(c.keypoints!=null) $('keyPoints').value=c.keypoints; if(c.qtext!=null) $('qtext').value=c.qtext;
+  if(c.sess!=null) $('sess').value=c.sess; if(c.qset!=null) $('qset').value=c.qset;
+  if(c.tprep) $('tprep').value=c.tprep; if(c.trec) $('trec').value=c.trec; if(c.tmin!=null) $('tmin').value=c.tmin;
+  if(c.students) $('nameList').innerHTML=c.students.map(n=>`<option value="${esc(n)}">`).join('');
+}
+function collectCfg(){ return { rubric:$('rubricText').value, keypoints:$('keyPoints').value, qtext:$('qtext').value, sess:$('sess').value, qset:$('qset').value, tprep:$('tprep').value, trec:$('trec').value, tmin:$('tmin').value }; }
+if(!$('rubricText').value) $('rubricText').value=DEFAULT_RUBRIC.map(r=>r[0]+': '+r[1]).join('\n');
+applyCfg(localCfg());
+async function afterGate(){
+  $('srvUrl').value=srv(); $('srvWarn').hidden=hasServer(); $('autoAi').disabled=!hasServer();
+  if(!hasServer()) return;
+  try{ const c=await api('/config'); if(c&&Object.keys(c).length){ applyCfg(c); try{ localStorage.setItem('ys_cfg',JSON.stringify(c)); }catch(e){} $('cfgStatus').textContent='서버 설정 불러옴'; } }
+  catch(e){ $('cfgStatus').textContent='서버 설정을 불러오지 못했습니다: '+e.message; }
+  try{ const r=await api('/sessions'); const names=[...new Set(r.sessions.map(s=>s.name))].filter(n=>n&&n!=='-'); $('nameList').innerHTML=names.map(n=>`<option value="${esc(n)}">`).join(''); }catch(e){}
+}
+$('btnSaveCfg').addEventListener('click',async()=>{ const c=collectCfg(); try{ localStorage.setItem('ys_cfg',JSON.stringify(c)); }catch(e){}
+  if(!hasServer()){ $('cfgStatus').textContent='이 기기에만 저장됨 (서버 미설정)'; return; }
+  try{ await api('/config',{method:'PUT',json:c}); $('cfgStatus').textContent='서버에 저장됨 '+new Date().toLocaleTimeString('ko-KR'); }catch(e){ $('cfgStatus').textContent='저장 실패: '+e.message; } });
+$('btnLoadCfg').addEventListener('click',afterGate);
+$('btnSrvSave').addEventListener('click',async()=>{
+  const u=$('srvUrl').value.trim().replace(/\/+$/,''); try{ localStorage.setItem('ys_server',u); }catch(e){}
+  $('srvWarn').hidden=!!u; $('autoAi').disabled=!u; if(!u){ $('srvStatus').textContent='서버 주소를 지웠습니다.'; return; }
+  $('srvStatus').textContent='확인 중...';
+  try{ const r=await fetch(u+'/ping'); const j=await r.json(); const a=await api('/config');
+    $('srvInfo').textContent='연결 성공\n서버: '+(j.service||'?')+'\nKV 바인딩: '+(j.kv?'있음':'없음')+'\nOpenAI 키: '+(j.key?'있음':'없음')+'\n입장 암호: '+(j.pw?'설정됨':'없음')+'\n인증: 통과\n설정 저장 여부: '+(Object.keys(a).length?'있음':'아직 없음');
+    $('srvStatus').textContent='연결됨'; afterGate();
+  }catch(e){ $('srvInfo').textContent='연결 실패: '+e.message+'\n\n확인할 것\n1. 주소가 https://로 시작하고 끝에 경로가 없는지\n2. 서버의 APP_PASSWORD가 입장 암호와 같은지\n3. ALLOWED_ORIGIN에 이 페이지 주소가 들어 있는지'; $('srvStatus').textContent='실패'; }
+});
 
 // ---------- 문제지 파일 ----------
 async function pdfToImages(file){
@@ -305,8 +435,12 @@ function meter(){
   }catch(e){}
 }
 function mime(){ for(const m of ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4']) if(MediaRecorder.isTypeSupported(m)) return m; return ''; }
-function startRec(){ S.chunks=[]; const opt=mime()?{mimeType:mime()}:{}; S.rec=new MediaRecorder(S.stream,opt); S.rec.ondataavailable=e=>{ if(e.data.size) S.chunks.push(e.data); }; S.rec.start(1000); }
-function stopRec(){ return new Promise(res=>{ if(!S.rec||S.rec.state==='inactive'){res(null);return;} S.rec.onstop=()=>res(new Blob(S.chunks,{type:S.rec.mimeType||'video/webm'})); S.rec.stop(); }); }
+function startRec(withAudioCopy){ S.chunks=[]; const opt=mime()?{mimeType:mime()}:{}; S.rec=new MediaRecorder(S.stream,opt); S.rec.ondataavailable=e=>{ if(e.data.size) S.chunks.push(e.data); }; S.rec.start(1000);
+  S.arec=null; S.audioBlob=null;
+  if(withAudioCopy){ try{ const at=S.stream.getAudioTracks(); if(at.length){ const as=new MediaStream([at[0]]); const am=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(m=>MediaRecorder.isTypeSupported(m)); S.achunks=[]; S.arec=new MediaRecorder(as,am?{mimeType:am,audioBitsPerSecond:48000}:{}); S.arec.ondataavailable=e=>{ if(e.data.size) S.achunks.push(e.data); }; S.arec.start(1000); } }catch(e){ addLog('오디오 별도 녹음 실패: '+e.message); } } }
+function stopRec(){ return new Promise(res=>{
+  if(S.arec&&S.arec.state!=='inactive'){ S.arec.onstop=()=>{ S.audioBlob=new Blob(S.achunks,{type:S.arec.mimeType||'audio/webm'}); }; try{ S.arec.stop(); }catch(e){} }
+  if(!S.rec||S.rec.state==='inactive'){res(null);return;} S.rec.onstop=()=>res(new Blob(S.chunks,{type:S.rec.mimeType||'video/webm'})); S.rec.stop(); }); }
 
 // ---------- 화면 1: 장비 확인 ----------
 function deviceScreen(){
@@ -380,18 +514,6 @@ function prepScreen(){
   });
 }
 
-// ---------- 음성 전사 (Web Speech API) ----------
-function startSTT(){
-  S.tr=[]; S.trErr=''; if(!SR||!$('stt').checked) return;
-  S.trOn=true; let interim='';
-  const make=()=>{ const r=new SR(); r.lang='ko-KR'; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
-    r.onresult=e=>{ interim=''; for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal){ const t=res[0].transcript.trim(); if(t) S.tr.push({t:(Date.now()-S.ansStart)/1000,text:t}); } else interim+=res[0].transcript; } const el=$('trLive'); if(el) el.textContent=(S.tr.length?S.tr[S.tr.length-1].text+' ':'')+interim; };
-    r.onerror=e=>{ if(e.error==='no-speech'||e.error==='aborted') return; S.trErr=e.error; addLog('음성 인식 오류: '+e.error); };
-    r.onend=()=>{ if(S.trOn){ try{ make(); }catch(e){} } };
-    r.start(); S.sr=r; };
-  try{ make(); addLog('음성 전사 시작'); }catch(e){ S.trErr=e.message; }
-}
-function stopSTT(){ S.trOn=false; try{ if(S.sr) S.sr.stop(); }catch(e){} }
 
 // ---------- 화면 5: 답변 녹화 ----------
 function answerScreen(){
@@ -401,11 +523,10 @@ function answerScreen(){
     screen(`<video class="cam" id="camLive" autoplay muted playsinline></video>
       <div class="corner"><div class="l" style="margin-top:0">면접 시간</div><div class="v" id="cT">${fmt(total)}</div><div class="l">최소 면접 시간</div><div class="v" id="cM">${fmt(mn)}</div></div>
       <div class="recbadge blink">REC</div>
-      <button class="stopbtn" id="btnStop" disabled aria-label="답변 종료"></button><div class="stophint" id="stopHint">최소 면접 시간이 지나면 종료할 수 있습니다</div>
-      <div id="trLive" style="position:absolute;right:18px;bottom:24px;max-width:45%;font-size:12px;color:#777;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" hidden></div>`);
-    $('camLive').srcObject=S.stream; S.ansStart=Date.now(); startRec(); startSTT(); if($('stt').checked) $('trLive').hidden=false; addLog('답변 녹화 자동 시작 (최대 '+fmt(total)+', 최소 '+fmt(mn)+')'); beep(1);
+      <button class="stopbtn" id="btnStop" disabled aria-label="답변 종료"></button><div class="stophint" id="stopHint">최소 면접 시간이 지나면 종료할 수 있습니다</div>`);
+    $('camLive').srcObject=S.stream; S.ansStart=Date.now(); startRec(true); addLog('답변 녹화 자동 시작 (최대 '+fmt(total)+', 최소 '+fmt(mn)+')'); beep(1);
     let done=false;
-    const finish=async(mode)=>{ if(done) return; done=true; clearInterval(S.timer); S.endMode=mode; S.ansSec=(Date.now()-S.ansStart)/1000; stopSTT(); S.blob=await stopRec(); addLog('녹화 종료: '+mode+', 답변 길이 '+fmt(S.ansSec)); resolve(); };
+    const finish=async(mode)=>{ if(done) return; done=true; clearInterval(S.timer); S.endMode=mode; S.ansSec=(Date.now()-S.ansStart)/1000; S.blob=await stopRec(); await wait(300); addLog('녹화 종료: '+mode+', 답변 길이 '+fmt(S.ansSec)); resolve(); };
     $('btnStop').addEventListener('click',()=>finish('조기 종료 요청'));
     runTimer(total,(el,left)=>{ const t=$('cT'),m=$('cM'); t.textContent=fmt(Math.ceil(left)); t.classList.toggle('crit',left<=10);
       const ml=mn-el; m.textContent=fmt(Math.ceil(Math.max(0,ml)));
@@ -416,9 +537,11 @@ function answerScreen(){
 
 // ---------- 전체 흐름 ----------
 async function runExam(){
+  try{ localStorage.setItem('ys_cfg',JSON.stringify(collectCfg())); }catch(e){}
+  S.ai=null; S.tr=[]; S.trSrc=''; S.metrics={}; S.recId=null; S.prior=[]; S.audioBlob=null;
   S.aborted=false; S.log=[]; S.blob=null; S.q2At=null; S.prepSec=0;
   $('sessLbl').textContent=$('sess').value.trim()||new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}).replace(/\. /g,'월').replace(/\.$/,'일')+' 활동우수형 면접녹화시험(MOCK)';
-  $('s0').hidden=true; $('s3').hidden=true; $('tab').hidden=false;
+  $('s0').hidden=true; $('s3').hidden=true; $('sRec').hidden=true; $('sSetup').hidden=true; $('tab').hidden=false;
   try{
     await deviceScreen(); if(S.aborted) return;
     if(!$('skipPractice').checked){
@@ -435,64 +558,173 @@ async function runExam(){
     await answerScreen(); if(S.aborted) return;
     screen(`<div class="msg">녹화가 종료되었습니다.<br><span style="font-size:16px;color:var(--tab-dim)">잠시 후 확인 화면으로 이동합니다.</span></div>`); setFoot('녹화 완료');
     await wait(1500);
-  } finally { if(!S.aborted){ $('tab').hidden=true; stopCam(); showResult(); } }
+  } finally { if(!S.aborted){ $('tab').hidden=true; stopCam(); showResult(); if($('autoAi').checked&&hasServer()) runPipeline(); } }
 }
 $('btnStart').addEventListener('click',runExam);
-$('btnAbort').addEventListener('click',async()=>{ S.aborted=true; clearInterval(S.timer); stopSTT(); await stopRec(); stopCam(); $('tab').hidden=true; $('s0').hidden=false; });
+$('btnAbort').addEventListener('click',async()=>{ S.aborted=true; clearInterval(S.timer); await stopRec(); stopCam(); $('tab').hidden=true; view('exam'); });
 $('adminBtn').addEventListener('click',()=>{ const f=document.querySelector('.tfoot'); f.hidden=!f.hidden; });
 window.addEventListener('beforeunload',e=>{ if(!$('tab').hidden){ e.preventDefault(); e.returnValue=''; } });
 
-// ---------- 결과 ----------
-const RUBRIC=[
-  ['제시문 이해','각 제시문의 핵심 주장과 제시문 간 관계(대립, 보완, 사례)를 정확히 파악했는가'],
-  ['문항 요구 충족','문항이 묻는 바에 직접 답했는가. 문항별 답변 누락이 없는가'],
-  ['논리와 근거','주장과 근거가 연결되고, 제시문의 내용을 근거로 활용했는가'],
-  ['답변 구성','문항 순서와 전환이 명확하고 마무리가 있는가'],
-  ['전달력','발음, 속도, 성량이 적절하고 카메라를 보며 말했는가'],
-  ['시간 활용','준비 시간을 문항별로 배분했고, 답변이 너무 짧거나 길지 않았는가'],
-  ['자기 생각','제시문 요약에 그치지 않고 자신의 평가나 적용을 덧붙였는가'],
-  ['규칙 준수','이름, 가족, 학교 언급 없음. 문항과 무관한 발언 없음']
-];
-function buildRubric(){ const t=$('rubric'); t.innerHTML='<tr><th style="width:38%">항목</th><th>점수</th></tr>'+RUBRIC.map((r,i)=>`<tr><td><b>${r[0]}</b><div class="note" style="margin:2px 0 0">${r[1]}</div></td><td><div class="scale">${[1,2,3,4,5].map(v=>`<label><input type="radio" name="r${i}" value="${v}"><span>${v}</span></label>`).join('')}</div></td></tr>`).join(''); t.addEventListener('change',calc); }
+// ---------- 결과 화면 ----------
+function buildRubric(){ RUBRIC=RUBRIC_LIST(); const t=$('rubric'); t.innerHTML='<tr><th style="width:38%">항목</th><th>점수</th></tr>'+RUBRIC.map((r,i)=>`<tr><td><b>${esc(r[0])}</b><div class="note" style="margin:2px 0 0">${esc(r[1])}</div><div class="why" id="why${i}" hidden></div></td><td><div class="scale">${[1,2,3,4,5].map(v=>`<label><input type="radio" name="r${i}" value="${v}"><span>${v}</span></label>`).join('')}</div></td></tr>`).join(''); $('totalMax').textContent=RUBRIC.length*5; }
+$('rubric').addEventListener('change',calc);
 function calc(){ let s=0; RUBRIC.forEach((_,i)=>{ const c=document.querySelector(`input[name=r${i}]:checked`); if(c) s+=+c.value; }); $('total').textContent=s; return s; }
-function scores(){ return RUBRIC.map((r,i)=>{ const c=document.querySelector(`input[name=r${i}]:checked`); return r[0]+': '+(c?c.value:'-'); }); }
+function scoreRows(){ return RUBRIC.map((r,i)=>{ const c=document.querySelector(`input[name=r${i}]:checked`); const w=$('why'+i); return {item:r[0],score:c?+c.value:null,reason:(w&&!w.hidden)?w.textContent.replace(/^AI: /,''):''}; }); }
 function showResult(){
-  $('s3').hidden=false; const v=$('result'); if(S.blob) v.src=URL.createObjectURL(S.blob);
+  view('exam'); $('s0').hidden=true; $('s3').hidden=false; $('pipe').hidden=true;
+  const v=$('result'); if(S.blob) v.src=URL.createObjectURL(S.blob);
   $('kAns').textContent=fmt(S.ansSec); $('kEnd').textContent=S.endMode.startsWith('조기')?'조기 종료':'자동 종료';
   $('kQ2').textContent=$('skipPrep').checked?'해당 없음':(S.q2At===null?'기록 없음':fmt(S.q2At)+(S.q2At>240?' (4분 초과)':''));
   $('kPrep').textContent=$('skipPrep').checked?'건너뜀':fmt(S.prepSec);
-  RUBRIC.forEach((_,i)=>{ const c=document.querySelector(`input[name=r${i}]:checked`); if(c) c.checked=false; }); calc(); $('comment').value='';
-  fillTranscript(false);
+  buildRubric(); calc(); $('comment').value=''; $('tnote').value=''; $('aiStatus').textContent=''; $('transcript').value='';
+  $('qAnalysis').innerHTML='<div class="note">AI 평가 후 표시됩니다.</div>'; $('swBox').innerHTML='<div class="note">AI 평가 후 표시됩니다.</div>'; $('growthBox').textContent='같은 이름으로 저장된 이전 기록이 있으면 비교합니다.';
+  ['kChars','kRate','kPause','kLongest','kFill'].forEach(k=>$(k).textContent='--');
+  $('trNote').textContent=S.audioBlob?'음성 파일 '+(S.audioBlob.size/1024/1024).toFixed(1)+'MB 준비됨.':'별도 음성 파일이 없어 자동 전사는 할 수 없습니다. 전사문을 직접 붙여 넣을 수 있습니다.';
+  $('btnAiTr').disabled=!S.audioBlob||!hasServer(); $('btnAiEval').disabled=!hasServer(); $('btnSave').disabled=!hasServer();
   $('log').textContent=S.log.join('\n'); window.scrollTo(0,0);
 }
-function fillTranscript(withTime){
-  const plain=S.tr.map(x=>x.text).join(' ');
-  $('transcript').value=withTime?S.tr.map(x=>'['+fmt(x.t)+'] '+x.text).join('\n'):plain;
-  const chars=plain.replace(/\s/g,'').length; $('kChars').textContent=chars; $('kSeg').textContent=S.tr.length;
-  $('kRate').textContent=S.ansSec>5?Math.round(chars/(S.ansSec/60)):'--';
-  const n=$('trNote');
-  if(!$('stt').checked||!SR) n.textContent='전사를 쓰지 않았습니다.';
-  else if(S.trErr) n.textContent='음성 인식 중 오류가 있었습니다('+S.trErr+'). 인터넷 연결과 마이크 권한을 확인하세요. 일부만 전사되었을 수 있습니다.';
-  else if(!S.tr.length) n.textContent='인식된 음성이 없습니다. 마이크 입력이 너무 작았거나 인터넷이 끊겼을 수 있습니다.';
-  else n.textContent='브라우저의 음성 인식(Google 또는 Microsoft 서버)으로 전사했습니다. 고유명사와 학술 용어는 틀릴 수 있으니 직접 확인이 필요합니다. 참고로 분당 글자 수는 전사가 정확할 때만 의미가 있습니다.';
+
+// ---------- 자동 파이프라인 ----------
+function pipeStep(i,state,msg){ const steps=['전사','말하기 지표','이전 기록 조회','AI 평가','서버 저장']; const el=$('pipe'); el.hidden=false;
+  if(!el.dataset.init){ el.innerHTML=steps.map((s,k)=>`<span class="pstep" id="ps${k}">${s}</span>`).join('<span class="parrow">→</span>')+'<span class="pmsg" id="pmsg"></span>'; el.dataset.init='1'; }
+  if(i>=0){ const p=$('ps'+i); p.className='pstep '+state; } $('pmsg').textContent=msg||''; }
+async function runPipeline(){
+  $('pipe').dataset.init=''; pipeStep(-1,'','');
+  try{ pipeStep(0,'run','음성을 전사하는 중 (10초~1분)'); await doTranscribe(); pipeStep(0,'ok',''); }
+  catch(e){ pipeStep(0,'fail','전사 실패: '+e.message); addLog('전사 실패: '+e.message); return; }
+  pipeStep(1,'run',''); computeMetrics(); pipeStep(1,'ok','');
+  pipeStep(2,'run','이전 기록 조회'); await loadPrior(); pipeStep(2,'ok','');
+  try{ pipeStep(3,'run','AI가 평가하는 중 (20초~1분)'); await doEvaluate(); pipeStep(3,'ok',''); }
+  catch(e){ pipeStep(3,'fail','평가 실패: '+e.message); addLog('AI 평가 실패: '+e.message); return; }
+  try{ pipeStep(4,'run','저장 중'); await doSave(); pipeStep(4,'ok','완료. 점수와 코멘트를 확인한 뒤 수정하면 다시 저장하세요.'); }
+  catch(e){ pipeStep(4,'fail','저장 실패: '+e.message); }
 }
+
+// ---------- 전사 ----------
+async function doTranscribe(){
+  if(!S.audioBlob) throw new Error('음성 파일이 없습니다.');
+  const fd=new FormData(); fd.append('file',S.audioBlob,'answer.webm');
+  const hint=('연세대학교 제시문 면접 답변. 제시문 (가), (나), (다). 문항 1번, 2번. '+($('keyPoints').value||'').slice(0,300)).slice(0,800); fd.append('prompt',hint);
+  const j=await api('/transcribe',{method:'POST',body:fd});
+  S.tr=(j.segments&&j.segments.length)?j.segments.map(s=>({t:s.start,e:s.end,text:s.text})):[{t:0,e:S.ansSec,text:j.text||''}];
+  S.trSrc='whisper'; fillTranscript(false); $('trNote').textContent='Whisper로 전사했습니다. 고유명사와 학술 용어는 틀릴 수 있으니 영상과 대조해 확인하세요.'; addLog('Whisper 전사 완료 ('+S.tr.length+'구간)');
+}
+function fillTranscript(withTime){ $('transcript').value=withTime?S.tr.map(x=>'['+fmt(x.t)+'] '+x.text).join('\n'):S.tr.map(x=>x.text).join(' '); }
+function timedTranscript(){ return S.tr.length?S.tr.map(x=>'['+fmt(x.t)+'] '+x.text).join('\n'):$('transcript').value.trim(); }
+$('btnAiTr').addEventListener('click',async()=>{ $('btnAiTr').disabled=true; $('trNote').textContent='전사 중...'; try{ await doTranscribe(); computeMetrics(); }catch(e){ $('trNote').textContent='전사 실패: '+e.message; } finally{ $('btnAiTr').disabled=false; } });
 $('btnTrTime').addEventListener('click',()=>fillTranscript(true));
 $('btnTrCopy').addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText($('transcript').value); $('btnTrCopy').textContent='복사됨'; }catch(e){ $('transcript').select(); } setTimeout(()=>$('btnTrCopy').textContent='전사 복사',1500); });
+
+// ---------- 말하기 지표 ----------
+const FILLERS=/(^|[\s,.])(음+|어+|그+|저기|뭐냐|뭐지|그니까|그러니까|일단|막|약간|좀|이제|그래서 이제)(?=[\s,.]|$)/g;
+function computeMetrics(){
+  const plain=S.tr.length?S.tr.map(x=>x.text).join(' '):$('transcript').value;
+  const chars=plain.replace(/\s/g,'').length; const dur=S.ansSec||((S.tr.length&&S.tr[S.tr.length-1].e)||0);
+  const cpm=dur>5?Math.round(chars/(dur/60)):null;
+  let pauses=0,longest=0; for(let i=1;i<S.tr.length;i++){ const g=S.tr[i].t-(S.tr[i-1].e||S.tr[i-1].t); if(g>=1.5){ pauses++; longest=Math.max(longest,g); } }
+  if(S.tr.length){ const lead=S.tr[0].t; if(lead>=1.5){ pauses++; longest=Math.max(longest,lead); } }
+  const fillers=(plain.match(FILLERS)||[]).length;
+  S.metrics={chars,cpm,pauses,longest:Math.round(longest*10)/10,fillers,dur};
+  $('kChars').textContent=chars; $('kRate').textContent=cpm??'--'; $('kPause').textContent=S.tr.length>1?pauses+'회':'--'; $('kLongest').textContent=S.tr.length>1?S.metrics.longest+'초':'--'; $('kFill').textContent=fillers+'회';
+}
+
+// ---------- 이전 기록 ----------
+async function loadPrior(){
+  S.prior=[]; const name=$('sname').value.trim(); if(!name) return;
+  try{ const r=await api('/sessions?student='+encodeURIComponent(name)); const ids=r.sessions.slice(0,5).map(s=>s.id);
+    for(const id of ids){ try{ const rec=await api('/sessions/'+encodeURIComponent(id)); S.prior.push({date:rec.date,set:rec.set,total:rec.total,max:rec.max,scores:rec.scores,improvements:(rec.ai&&rec.ai.improvements)||[]}); }catch(e){} }
+  }catch(e){ addLog('이전 기록 조회 실패: '+e.message); }
+}
+
+// ---------- AI 평가 ----------
+async function doEvaluate(){
+  const transcript=timedTranscript(); if(!transcript) throw new Error('전사문이 비어 있습니다.');
+  RUBRIC=RUBRIC_LIST(); const m=S.metrics;
+  const body={ rubric:RUBRIC, qtext:$('qtext').value.trim(), keypoints:$('keyPoints').value.trim(), name:$('sname').value.trim(), set:$('qset').value.trim(),
+    ansFmt:fmt(S.ansSec), maxFmt:fmt(Math.max(1,+$('trec').value)*60), endMode:S.endMode, chars:m.chars, cpm:m.cpm, pauses:m.pauses, longestPause:m.longest, fillers:m.fillers, prior:S.prior, transcript };
+  const j=await api('/evaluate',{method:'POST',json:body}); S.ai=j; renderAI(j); addLog('AI 평가 완료 ('+(j.model||'')+')');
+}
+function renderAI(j){
+  (j.scores||[]).forEach((sc,i)=>{ if(i>=RUBRIC.length) return; const v=Math.min(5,Math.max(1,Math.round(+sc.score||0))); if(v){ const el=document.querySelector(`input[name=r${i}][value="${v}"]`); if(el) el.checked=true; } const w=$('why'+i); if(w){ w.textContent='AI: '+(sc.reason||''); w.hidden=!sc.reason; } });
+  calc();
+  const qs=j.questions||[];
+  $('qAnalysis').innerHTML=qs.length?qs.map(q=>`<div class="qitem ${q.answered===false?'miss':''}"><div class="qhead"><b>${esc(q.label)}</b> <span class="note" style="display:inline;margin:0">${q.answered===false?'답변 없음':''} ${q.start?esc(q.start)+' ~ '+esc(q.end||''):''}</span></div>
+    ${(q.covered||[]).length?'<div><span class="tag ok">언급</span> '+q.covered.map(esc).join(', ')+'</div>':''}
+    ${(q.missing||[]).length?'<div><span class="tag bad">누락</span> '+q.missing.map(esc).join(', ')+'</div>':''}
+    ${q.comment?'<div class="note" style="margin-top:4px">'+esc(q.comment)+'</div>':''}</div>`).join(''):'<div class="note">문항별 분석 결과가 없습니다.</div>';
+  const d=j.delivery||{};
+  $('swBox').innerHTML=`<div class="swcol"><b>강점</b><ul>${(j.strengths||[]).map(s=>'<li>'+esc(s)+'</li>').join('')||'<li class="note">-</li>'}</ul></div><div class="swcol"><b>개선점</b><ul>${(j.improvements||[]).map(s=>'<li>'+esc(s)+'</li>').join('')||'<li class="note">-</li>'}</ul></div>`+
+    (d.fillers||d.structure||d.pace?`<div class="note" style="margin-top:8px">${d.fillers?'군말: '+esc(d.fillers)+'<br>':''}${d.structure?'구조: '+esc(d.structure)+'<br>':''}${d.pace?'분량과 속도: '+esc(d.pace):''}</div>`:'');
+  const g=j.growth||{};
+  $('growthBox').innerHTML=g.available?`<div>${esc(g.summary)}</div>${(g.better||[]).length?'<div style="margin-top:4px"><span class="tag ok">나아짐</span> '+g.better.map(esc).join(', ')+'</div>':''}${(g.worse||[]).length?'<div style="margin-top:4px"><span class="tag bad">후퇴</span> '+g.worse.map(esc).join(', ')+'</div>':''}`:'비교할 이전 기록이 없습니다. (같은 이름으로 저장된 기록이 '+S.prior.length+'개)';
+  $('comment').value=j.comment||'';
+}
+$('btnAiEval').addEventListener('click',async()=>{ $('btnAiEval').disabled=true; $('aiStatus').textContent='평가 중...'; try{ if(!S.metrics.chars) computeMetrics(); if(!S.prior.length) await loadPrior(); await doEvaluate(); $('aiStatus').textContent='완료'; }catch(e){ $('aiStatus').textContent='실패: '+e.message; } finally{ $('btnAiEval').disabled=false; } });
+
+// ---------- 저장 ----------
+function buildRecord(){ return { name:$('sname').value.trim()||'-', set:$('qset').value.trim()||'-', date:new Date().toLocaleString('ko-KR'), ansSec:Math.round(S.ansSec), endMode:S.endMode, prepSec:Math.round(S.prepSec), q2At:S.q2At,
+  settings:{tprep:$('tprep').value,trec:$('trec').value,tmin:$('tmin').value}, metrics:S.metrics, transcript:$('transcript').value, segments:S.tr, trSrc:S.trSrc,
+  scores:scoreRows(), total:calc(), max:RUBRIC.length*5, ai:S.ai, comment:$('comment').value, tnote:$('tnote').value, log:S.log }; }
+async function doSave(){ const rec=buildRecord(); if(S.recId){ await api('/sessions/'+encodeURIComponent(S.recId),{method:'PUT',json:rec}); } else { const r=await api('/sessions',{method:'POST',json:rec}); S.recId=r.id; } addLog('서버 저장 '+(S.recId||'')); }
+$('btnSave').addEventListener('click',async()=>{ $('btnSave').disabled=true; $('aiStatus').textContent='저장 중...'; try{ await doSave(); $('aiStatus').textContent='저장됨 '+new Date().toLocaleTimeString('ko-KR'); }catch(e){ $('aiStatus').textContent='저장 실패: '+e.message; } finally{ $('btnSave').disabled=false; } });
+
+// ---------- 파일 저장 ----------
 function fname(ext){ const n=($('sname').value||'student').replace(/[^\w가-힣-]+/g,'_'); const d=new Date(); const s=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'_'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0'); return `yonsei_${n}_${s}.${ext}`; }
 function dl(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},2000); }
 $('btnDl').addEventListener('click',()=>{ if(S.blob) dl(S.blob,fname(S.blob.type.includes('mp4')?'mp4':'webm')); });
-function report(){ return ['연세대 제시문 면접 모의 녹화 기록','일시: '+new Date().toLocaleString('ko-KR'),'학생: '+($('sname').value||'-'),'문항 세트: '+($('qset').value||'-'),
-  '설정: 숙지 '+$('tprep').value+'분, 면접 '+$('trec').value+'분, 최소 '+$('tmin').value+'분','',
-  '숙지 시간: '+$('kPrep').textContent,'답변 길이: '+fmt(S.ansSec),'종료 방식: '+S.endMode,'2번 문항 착수: '+$('kQ2').textContent,'',
-  '[답변 전사] '+$('kChars').textContent+'자, 분당 '+$('kRate').textContent+'자',$('transcript').value||'-','','[평가] 합계 '+calc()+'/40',...scores(),'','[종합 코멘트]',$('comment').value||'-','','[진행 기록]',...S.log].join('\n'); }
-$('btnDlReport').addEventListener('click',()=>dl(new Blob([report()],{type:'text/plain;charset=utf-8'}),fname('txt')));
-function loadHist(){ try{ return JSON.parse(localStorage.getItem('yonsei_mock')||'[]'); }catch(e){ return []; } }
-function renderHist(){ const h=loadHist(); $('history').innerHTML=h.slice(-15).reverse().map(r=>`<li>${r.date}, ${r.name}, ${r.set}, ${r.total}/40, 답변 ${r.ans}${r.q2?', 2번 착수 '+r.q2:''}</li>`).join('')||'<li class="note">아직 없음</li>'; }
-$('btnSave').addEventListener('click',()=>{ const h=loadHist(); h.push({date:new Date().toLocaleString('ko-KR'),name:$('sname').value||'-',set:$('qset').value||'-',total:calc(),ans:fmt(S.ansSec),q2:$('kQ2').textContent,comment:$('comment').value}); try{ localStorage.setItem('yonsei_mock',JSON.stringify(h)); }catch(e){} renderHist(); $('btnSave').textContent='저장됨'; setTimeout(()=>$('btnSave').textContent='평가 저장',1500); });
+$('btnDlAudio').addEventListener('click',()=>{ if(S.audioBlob) dl(S.audioBlob,fname('audio.webm')); });
+function reportText(rec){ const ai=rec.ai||{}; const m=rec.metrics||{};
+  return ['연세대 제시문 면접 모의 녹화 보고서','일시: '+rec.date,'학생: '+rec.name,'문항 세트: '+rec.set,'답변 길이: '+fmt(rec.ansSec)+' / 종료: '+rec.endMode,'',
+  '[말하기 지표] 글자 '+(m.chars??'-')+'자, 분당 '+(m.cpm??'-')+'자, 침묵 '+(m.pauses??'-')+'회(최장 '+(m.longest??'-')+'초), 군말 추정 '+(m.fillers??'-')+'회','',
+  '[평가] 합계 '+rec.total+'/'+rec.max, ...(rec.scores||[]).map(s=>'- '+s.item+': '+(s.score??'-')+(s.reason?'  ('+s.reason+')':'')),'',
+  '[문항별 분석]', ...((ai.questions||[]).map(q=>'- '+q.label+(q.answered===false?' (답변 없음)':'')+(q.start?' '+q.start+'~'+(q.end||''):'')+'\n  언급: '+(q.covered||[]).join(', ')+'\n  누락: '+(q.missing||[]).join(', ')+'\n  '+(q.comment||''))),'',
+  '[강점]', ...((ai.strengths||[]).map(s=>'- '+s)),'[개선점]', ...((ai.improvements||[]).map(s=>'- '+s)),'',
+  '[이전 회차 비교] '+((ai.growth&&ai.growth.available)?ai.growth.summary:'없음'),'',
+  '[종합 코멘트]',rec.comment||'-','','[선생님 메모]',rec.tnote||'-','','[답변 전사]',rec.transcript||'-'].join('\n'); }
+$('btnDlReport').addEventListener('click',()=>dl(new Blob([reportText(buildRecord())],{type:'text/plain;charset=utf-8'}),fname('txt')));
 $('btnAgain').addEventListener('click',()=>{ $('s3').hidden=true; runExam(); });
-$('btnNew').addEventListener('click',()=>{ $('s3').hidden=true; $('s0').hidden=false; window.scrollTo(0,0); });
+$('btnNew').addEventListener('click',()=>view('exam'));
 
-buildRubric(); renderHist();
+// ---------- 기록 화면 ----------
+let REC_ALL=[];
+async function loadRecords(){
+  if(!hasServer()){ $('recList').innerHTML='<li class="note">서버를 설정하면 기록이 표시됩니다.</li>'; return; }
+  $('recList').innerHTML='<li class="note">불러오는 중...</li>';
+  try{ const r=await api('/sessions'); REC_ALL=r.sessions; const names=[...new Set(REC_ALL.map(s=>s.name))].filter(Boolean).sort(); const sel=$('recStudent'); const cur=sel.value;
+    sel.innerHTML='<option value="">전체 학생 ('+REC_ALL.length+'건)</option>'+names.map(n=>`<option value="${esc(n)}">${esc(n)} (${REC_ALL.filter(s=>s.name===n).length}회)</option>`).join(''); sel.value=cur; renderRecList(); }
+  catch(e){ $('recList').innerHTML='<li class="note">불러오기 실패: '+esc(e.message)+'</li>'; }
+}
+function renderRecList(){ const n=$('recStudent').value; const rows=n?REC_ALL.filter(s=>s.name===n):REC_ALL;
+  $('recList').innerHTML=rows.map(s=>`<li class="recrow" data-id="${esc(s.id)}"><span class="note" style="margin:0">${esc(s.date||'')}</span> <b>${esc(s.name)}</b> · ${esc(s.set)} · <b>${s.total??'-'}/${s.max??'-'}</b>${s.pct!=null?' ('+s.pct+'%)':''} · 답변 ${s.ans?fmt(s.ans):'-'}</li>`).join('')||'<li class="note">기록 없음</li>';
+  document.querySelectorAll('.recrow').forEach(li=>li.addEventListener('click',()=>openRecord(li.dataset.id)));
+  drawTrend(n,rows); }
+$('recStudent').addEventListener('change',renderRecList); $('btnRecReload').addEventListener('click',loadRecords);
+function drawTrend(name,rows){ const box=$('trendBox'); const pts=rows.filter(r=>r.pct!=null).slice().reverse(); if(!name||pts.length<2){ box.hidden=true; return; } box.hidden=false; $('trendTitle').textContent=name+' 점수 추이 (%)';
+  const c=$('trend'); const W=c.clientWidth||600, H=140; c.width=W*devicePixelRatio; c.height=H*devicePixelRatio; const g=c.getContext('2d'); g.scale(devicePixelRatio,devicePixelRatio);
+  const cs=getComputedStyle(document.documentElement); const fg=cs.getPropertyValue('--muted').trim()||'#888', ac=cs.getPropertyValue('--accent').trim()||'#0d3b66', ln=cs.getPropertyValue('--line').trim()||'#ddd';
+  const L=34,R=10,T=12,B=24; const x=i=>L+(W-L-R)*(pts.length===1?0.5:i/(pts.length-1)); const y=v=>T+(H-T-B)*(1-v/100);
+  g.clearRect(0,0,W,H); g.strokeStyle=ln; g.fillStyle=fg; g.font='11px sans-serif'; g.textAlign='right';
+  [0,50,100].forEach(v=>{ g.beginPath(); g.moveTo(L,y(v)); g.lineTo(W-R,y(v)); g.stroke(); g.fillText(v,L-6,y(v)+4); });
+  g.strokeStyle=ac; g.lineWidth=2; g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(x(i),y(p.pct)):g.moveTo(x(i),y(p.pct)); }); g.stroke();
+  g.fillStyle=ac; g.textAlign='center'; pts.forEach((p,i)=>{ g.beginPath(); g.arc(x(i),y(p.pct),3.5,0,7); g.fill(); g.fillText(p.pct,x(i),y(p.pct)-8); });
+  g.fillStyle=fg; pts.forEach((p,i)=>{ if(pts.length<=8||i%Math.ceil(pts.length/8)===0) g.fillText((p.date||'').slice(0,12).replace(/\. /g,'.'),x(i),H-8); }); }
+async function openRecord(id){ const d=$('recDetail'); d.innerHTML='<h2>기록 상세</h2><div class="note">불러오는 중...</div>';
+  try{ const r=await api('/sessions/'+encodeURIComponent(id)); const ai=r.ai||{}; const m=r.metrics||{};
+    d.innerHTML=`<h2>기록 상세</h2><div class="row" style="justify-content:space-between"><div><b>${esc(r.name)}</b> · ${esc(r.set)} · ${esc(r.date)}</div><div><button id="btnRecTxt">보고서 .txt</button> <button id="btnRecDel" class="danger">삭제</button></div></div>
+    <div class="kpi"><div><b>${r.total??'-'}/${r.max??'-'}</b><small>합계</small></div><div><b>${fmt(r.ansSec||0)}</b><small>답변 길이</small></div><div><b>${m.cpm??'--'}</b><small>분당 글자</small></div><div><b>${m.pauses??'--'}</b><small>침묵 횟수</small></div></div>
+    <table class="rubric">${(r.scores||[]).map(s=>`<tr><td><b>${esc(s.item)}</b>${s.reason?'<div class="why">'+esc(s.reason)+'</div>':''}</td><td style="width:50px;text-align:center"><b>${s.score??'-'}</b></td></tr>`).join('')}</table>
+    <h2 style="margin-top:14px">문항별 분석</h2><div class="qa">${(ai.questions||[]).map(q=>`<div class="qitem ${q.answered===false?'miss':''}"><div class="qhead"><b>${esc(q.label)}</b> <span class="note" style="display:inline;margin:0">${q.start?esc(q.start)+' ~ '+esc(q.end||''):''}</span></div>${(q.covered||[]).length?'<div><span class="tag ok">언급</span> '+q.covered.map(esc).join(', ')+'</div>':''}${(q.missing||[]).length?'<div><span class="tag bad">누락</span> '+q.missing.map(esc).join(', ')+'</div>':''}${q.comment?'<div class="note" style="margin-top:4px">'+esc(q.comment)+'</div>':''}</div>`).join('')||'<div class="note">없음</div>'}</div>
+    <h2 style="margin-top:14px">강점과 개선점</h2><div class="sw"><div class="swcol"><b>강점</b><ul>${(ai.strengths||[]).map(s=>'<li>'+esc(s)+'</li>').join('')}</ul></div><div class="swcol"><b>개선점</b><ul>${(ai.improvements||[]).map(s=>'<li>'+esc(s)+'</li>').join('')}</ul></div></div>
+    ${ai.growth&&ai.growth.available?'<h2 style="margin-top:14px">이전 회차 비교</h2><div class="note" style="margin:0">'+esc(ai.growth.summary)+'</div>':''}
+    <h2 style="margin-top:14px">종합 코멘트</h2><div style="white-space:pre-wrap">${esc(r.comment||'-')}</div>
+    ${r.tnote?'<h2 style="margin-top:14px">선생님 메모</h2><div style="white-space:pre-wrap">'+esc(r.tnote)+'</div>':''}
+    <h2 style="margin-top:14px">답변 전사</h2><div class="log" style="max-height:300px">${esc(r.transcript||'-')}</div>`;
+    $('btnRecTxt').addEventListener('click',()=>dl(new Blob([reportText(r)],{type:'text/plain;charset=utf-8'}),'yonsei_'+(r.name||'student').replace(/[^\w가-힣-]+/g,'_')+'_'+id.slice(2,12)+'.txt'));
+    $('btnRecDel').addEventListener('click',async()=>{ const b=$('btnRecDel'); if(b.dataset.arm!=='1'){ b.dataset.arm='1'; b.textContent='정말 삭제 (한 번 더)'; setTimeout(()=>{ b.dataset.arm=''; b.textContent='삭제'; },4000); return; } try{ await api('/sessions/'+encodeURIComponent(id),{method:'DELETE'}); d.innerHTML='<h2>기록 상세</h2><div class="note">삭제되었습니다.</div>'; loadRecords(); }catch(e){ b.textContent='실패: '+e.message; } });
+  }catch(e){ d.innerHTML='<h2>기록 상세</h2><div class="note">불러오기 실패: '+esc(e.message)+'</div>'; }
+}
+
+buildRubric();
 })();
 </script>
 </body>
