@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>서울대 수학 구술 연습</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#f6f5f1; --panel:#ffffff; --fg:#1d2230; --muted:#6b7080; --line:#dcdad2;
+  --accent:#0d3b66; --accent-fg:#ffffff; --rec:#e0362b; --ok:#2c7a4b; --warn:#b7791f;
+  --tab-bg:#000; --tab-fg:#e9ebee; --tab-dim:#8a8f99;
+  --display:"Noto Sans KR",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#15181f; --panel:#1e222b; --fg:#e8e9ec; --muted:#9aa0ad; --line:#303642; --accent:#5b9bd5; --accent-fg:#0d1420; color-scheme:dark }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--display);background:var(--bg);color:var(--fg);line-height:1.55;font-size:15px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px;border-bottom:2px solid var(--accent);padding-bottom:10px;margin-bottom:18px}
+header h1{font-size:20px;margin:0;font-weight:700}
+header .sub{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:0}
+.panel h2{font-size:14px;margin:0 0 10px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+label.chk{color:var(--fg);font-size:14px}
+input[type=text],input[type=number],textarea,select{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+textarea{min-height:110px;resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row > *{min-width:0}
+button{font:inherit;font-weight:500;padding:9px 16px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+.alert{padding:10px 12px;border-radius:6px;border:1px solid var(--warn);color:var(--warn);font-size:13px;margin-top:10px}
+.err{border-color:var(--rec);color:var(--rec)}
+[hidden]{display:none!important}
+#gate{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+#gate form{width:min(360px,100%);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;text-align:center}
+#gate h1{font-size:18px;margin:0 0 6px}
+#gate p{font-size:13px;color:var(--muted);margin:0 0 16px}
+#gate input{text-align:center;font-size:18px;letter-spacing:.1em}
+#gate .bad{color:var(--rec);font-size:13px;min-height:18px;margin-top:8px}
+.msg{font-size:clamp(18px,3vw,30px);line-height:1.6;font-weight:400;letter-spacing:-.01em;text-wrap:balance}
+.bigclock{font:500 clamp(64px,13vw,150px)/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.bigclock.warn{color:#f5c04e}
+.bigclock.crit{color:#ff6b5a}
+.biglabel{font-size:clamp(16px,2.4vw,24px);margin-bottom:14px;color:var(--tab-fg)}
+.recbadge{position:absolute;top:16px;right:18px;width:34px;height:34px;border-radius:50%;background:var(--rec);color:#fff;font:700 10px/34px var(--mono);text-align:center;letter-spacing:.04em;box-shadow:0 0 0 3px rgba(224,54,43,.25)}
+.recbadge.blink{animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.35}}
+.vu{display:inline-block;width:80px;height:6px;background:#333;border-radius:3px;vertical-align:middle;overflow:hidden}
+.vu i{display:block;height:100%;background:#6fd089;width:0}
+.rubric{width:100%;border-collapse:collapse;font-size:14px}
+.rubric th,.rubric td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.rubric th{font-size:12px;color:var(--muted);font-weight:500}
+.rubric .scale{display:flex;gap:4px}
+.rubric .scale label{margin:0;display:flex;flex-direction:column;align-items:center;font-size:11px;cursor:pointer;padding:3px 6px;border:1px solid var(--line);border-radius:4px;color:var(--fg)}
+.rubric .scale input{margin:0 0 2px}
+.rubric .scale input:checked + span{color:var(--accent);font-weight:700}
+.navbtn{padding:5px 12px;font-size:13px;border-radius:999px}
+.navbtn.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button.danger{color:var(--rec);border-color:var(--rec)}
+button.small{padding:4px 10px;font-size:12px}
+button.mark{width:40px;padding:3px 0;font-size:16px;line-height:1.2}
+.nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.qtable{width:100%;border-collapse:collapse;font-size:13px}
+.qtable th,.qtable td{border:1px solid var(--line);padding:6px;vertical-align:top;text-align:left}
+.qtable th{background:var(--bg);font-weight:500;white-space:nowrap}
+.qtable td textarea,.qtable td select,.qtable td input{width:100%;font-size:13px;padding:4px 6px;min-height:0}
+.qtable td textarea{min-height:44px;line-height:1.4}
+.qtable td.num{width:34px;text-align:center;color:var(--muted)}
+.qtable td.cat{width:110px}.qtable td.act{width:40px;text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 9px;font-size:12px;color:var(--muted);margin:2px 2px 2px 0}
+.pill.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.catbox{display:flex;flex-wrap:wrap;gap:4px}
+.catbox label{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer}
+.catbox label.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+/* 면접 진행 화면 */
+#ivRun{position:fixed;inset:0;background:var(--tab-bg);color:var(--tab-fg);z-index:50;display:flex;flex-direction:column;font-family:var(--display)}
+#ivRun .top{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;font-size:15px;color:var(--tab-dim);border-bottom:1px solid #222}
+#ivRun .top b{color:var(--tab-fg);font-weight:500}
+#ivRun .clock{font:500 30px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--tab-fg)}
+#ivRun .clock.warn{color:#f5c04e}#ivRun .clock.crit{color:#ff6b5a}
+#ivRun .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#ivRun .state{font-size:16px;color:var(--tab-dim);margin-bottom:18px;min-height:24px}
+#ivRun .state.live{color:#ff6b5a}
+#ivRun .qtext{font-size:clamp(22px,3.6vw,38px);line-height:1.45;max-width:900px;font-weight:500;word-break:keep-all}
+#ivRun .qtext.follow{color:#f5c04e}
+#ivRun .qtext.follow::before{content:"꼬리질문  ";font-size:.55em;color:var(--tab-dim);display:block;margin-bottom:8px}
+#ivRun .aclock{font:500 56px/1 var(--mono);margin-top:28px;font-variant-numeric:tabular-nums;color:var(--tab-fg)}
+#ivRun .aclock.dim{color:#444}
+#ivRun .vu{width:260px;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:18px auto 0}
+#ivRun .vu i{display:block;height:100%;width:0;background:#4caf50;transition:width .08s}
+#ivRun .bot{display:flex;gap:12px;justify-content:center;align-items:center;padding:18px;border-top:1px solid #222;flex-wrap:wrap}
+#ivRun .bot button{font-size:16px;padding:12px 22px;border-radius:12px;background:#1b1f27;color:var(--tab-fg);border:1px solid #333}
+#ivRun .bot button.go{background:#e0362b;border-color:#e0362b;color:#fff;font-weight:700;padding:14px 34px;font-size:18px}
+#ivRun .bot button:disabled{opacity:.35}
+#ivRun .hint{font-size:13px;color:var(--tab-dim);width:100%;text-align:center}
+#ivRun .count{font:700 clamp(90px,20vw,200px)/1 var(--mono);color:var(--tab-fg)}
+/* 피드백 */
+.fb h3{margin:18px 0 6px;font-size:15px;border-left:4px solid var(--accent);padding-left:8px}
+.fb .score{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.fb .score .big{font:600 44px/1 var(--mono);color:var(--accent)}
+.fb .score .lv{font-size:18px;font-weight:700}
+.fb .areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.fb .area{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.fb .area b{display:block;font-size:14px}.fb .area .n{font:600 22px/1.2 var(--mono);color:var(--accent)}
+.fb .area p{margin:4px 0 0;font-size:13px;color:var(--fg)}
+.fb ol,.fb ul{padding-left:20px;margin:4px 0}.fb li{margin:3px 0}
+.fb .turn{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0}
+.fb .turn .q{font-weight:500}.fb .turn .q .t{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 7px;margin-right:6px;color:var(--muted)}
+.fb .turn .a{color:var(--muted);font-size:13px;margin:4px 0;white-space:pre-wrap}
+.fb .turn .g{color:var(--ok);font-size:13px}.fb .turn .b{color:var(--warn);font-size:13px}
+.fb .mark{font-weight:700;margin-left:6px}
+.rtab{width:100%;border-collapse:collapse;font-size:14px}.rtab th,.rtab td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left}.rtab tr:hover td{background:var(--bg);cursor:pointer}
+.stu .teach{display:none !important}
+@media print{ body{background:#fff;color:#000;font-size:12px} header,.nav,.noprint,#gate,#ivRun{display:none !important} .panel{border:0;box-shadow:none;padding:0} .fb .area{break-inside:avoid} .fb .turn{break-inside:avoid} }
+
+#ivRun .qimgs{width:100%;max-width:1100px;max-height:62vh;overflow:auto;background:#fff;border-radius:8px;margin-bottom:10px}
+#ivRun .qimgs img{display:block;width:100%}
+#ivRun .qimgs.small{max-height:38vh;max-width:900px}
+#ivRun .qtext{font-size:clamp(18px,2.6vw,28px)}
+#ivRun .mid{justify-content:flex-start;overflow:auto}
+.fb .turn.prof .q{color:var(--accent)}.fb .photos img{max-width:48%;margin:4px;border:1px solid var(--line)}
+.fb table.rtab td,.fb table.rtab th{font-size:13px}
+#ivRun .qtext.follow::before{display:none}
+.fb .turn .a .t{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 7px;margin-right:6px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="gate">
+  <form id="gateForm" autocomplete="off">
+    <h1>서울대 수학 구술 연습</h1>
+    <p>입장 암호 또는 안내받은 개인 코드를 입력하세요.</p>
+    <input id="gatePw" type="password" inputmode="text" aria-label="입장 암호" autofocus>
+    <div class="bad" id="gateMsg"></div>
+    <button class="primary" type="submit" style="margin-top:10px;width:100%">입장</button>
+  </form>
+</div>
+<div class="wrap">
+<header>
+  <h1>서울대 수학 구술 연습</h1>
+  <span class="sub" id="hdrSub">구상 16분 → 풀이 설명 8분 (교수 질의, 힌트 포함) → 전사, AI 피드백, 기록</span>
+  <nav class="nav"><button class="navbtn on" data-v="exam">구술 연습</button><button class="navbtn" data-v="records">기록</button><button class="navbtn" id="btnLogout" type="button">나가기</button></nav>
+</header>
+<div class="alert" id="secWarn" hidden>이 페이지는 https 주소로 열어야 마이크를 쓸 수 있습니다.</div>
+<div class="alert" id="apiWarn" hidden>이 브라우저는 녹음을 지원하지 않습니다. 최신 Safari, Chrome, Edge를 쓰세요.</div>
+
+<section id="v-exam">
+ <div id="mvSetup" class="grid">
+  <div class="panel">
+    <h2>1. 문제</h2>
+    <label>학생 <select id="mvStudent"></select></label>
+    <label>문제 세트 <select id="mvSet"></select></label>
+    <div class="note" id="mvSetNote">문제 목록을 불러오는 중...</div>
+    <div class="note" id="mvPrev" style="margin-top:6px"></div>
+  </div>
+  <div class="panel">
+    <h2>2. 설정</h2>
+    <div class="row">
+      <label>구상 <select id="mvPrep"><option value="16" selected>16분</option><option value="15">15분</option><option value="12">12분</option><option value="10">10분</option><option value="5">5분</option><option value="0.5">30초 (시험용)</option></select></label>
+      <label>답변 <select id="mvAns"><option value="8" selected>8분</option><option value="7">7분</option><option value="10">10분</option><option value="15">15분</option><option value="3">3분 (시험용)</option></select></label>
+      <label>교수 목소리 <select id="mvVoice"><option value="server" selected>서버 목소리</option><option value="device">기기 내장 목소리</option><option value="none">글자만</option></select></label>
+      <label>침묵 개입 <select id="mvSilence"><option value="0">끔</option><option value="8" selected>8초 침묵이면 교수가 개입</option><option value="12">12초</option></select></label>
+    </div>
+    <p class="note">구상 시간에는 문제지만 보입니다. 답변이 시작되면 풀이를 말로 설명하세요. <b>설명 마침</b>을 누르면 교수가 되묻거나 다음 소문항으로 넘깁니다. <b>막혔어요</b>를 누르면 정답이 아닌, 다음 한 걸음을 여는 힌트를 줍니다. 전사와 판단 중에는 시계가 멈춥니다.</p>
+    <div class="row"><button class="primary" id="mvStart" type="button" style="font-size:17px;padding:12px 26px">구술 연습 시작</button><span class="msg" id="mvMsg"></span></div>
+  </div>
+ </div>
+ <div id="mvResult" class="panel" hidden>
+   <div class="row noprint" style="justify-content:space-between"><h2 style="margin:0">구술 결과</h2><span><button id="mvPrint" type="button">인쇄</button> <button id="mvAgain" type="button">다시 연습</button></span></div>
+   <div class="row noprint"><label>풀이 종이 사진 (선택, 최대 6장) <input type="file" id="mvPhotos" accept="image/*" capture="environment" multiple></label><button id="mvReEval" type="button">사진 포함해서 다시 평가</button></div>
+   <div class="note" id="mvResMsg" style="font-size:14px"></div>
+   <div class="fb" id="mvFb"></div>
+ </div>
+</section>
+
+<section id="v-records" hidden>
+ <div class="panel">
+   <div class="row noprint"><h2 style="margin:0">구술 기록</h2><label class="teach">학생 <select id="rcStudent"><option value="">전체</option></select></label><button id="rcReload" type="button">새로 고침</button><span class="msg" id="rcMsg"></span></div>
+   <table class="rtab" id="rcTable"><thead><tr><th>날짜</th><th>학생</th><th>문제</th><th>소요</th><th>힌트</th><th>점수</th><th>등급</th></tr></thead><tbody></tbody></table>
+ </div>
+ <div class="panel" id="rcDetail" hidden>
+   <div class="row noprint" style="justify-content:space-between"><h2 style="margin:0" id="rcTitle"></h2><span><button id="rcPrint" type="button">인쇄</button> <button class="danger teach" id="rcDel" type="button">삭제</button></span></div>
+   <div class="fb" id="rcFb"></div>
+ </div>
+</section>
+</div>
+
+<div id="ivRun" hidden>
+  <div class="top"><span id="rPhase">구상</span> <span class="clock" id="rClock">00:00</span><span><span id="rSub"></span> <span id="rName"></span></span></div>
+  <div class="mid" id="rMid">
+    <div class="state" id="rState"></div>
+    <div class="qimgs" id="rImgs"></div>
+    <div class="qtext" id="rQ"></div>
+    <div class="aclock dim" id="rA">0:00</div>
+    <div class="vu"><i id="rVu"></i></div>
+  </div>
+  <div class="bot">
+    <button id="rEarly" type="button">일찍 답변 시작</button>
+    <button id="rRepeat" type="button" hidden>다시 듣기</button>
+    <button id="rStuck" type="button" hidden>막혔어요, 힌트</button>
+    <button class="go" id="rDone" type="button" hidden>설명 마침 (교수 질의)</button>
+    <button id="rEnd" type="button">종료</button>
+    <div class="hint" id="rHint"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DEFAULT_SERVER='https://ys-mock.coolhhk83.workers.dev';
+function srv(){ try{ return (localStorage.getItem('ys_server')||DEFAULT_SERVER).replace(/\/+$/,''); }catch(e){ return DEFAULT_SERVER; } }
+async function sha(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+let TOKEN='', ROLE='', SNAME='';
+const isStudent=()=>ROLE==='student';
+if(!window.isSecureContext) $('secWarn').hidden=false;
+if(!window.MediaRecorder || !navigator.mediaDevices) $('apiWarn').hidden=false;
+// ---------- 입장 ----------
+function enter(){ $('gate').hidden=true; document.body.classList.toggle('stu',isStudent()); if(isStudent()){ const h=document.querySelector('header .sub'); h.insertAdjacentHTML('afterend','<span class="note" style="margin:0 0 0 10px">'+esc(SNAME)+' 학생으로 입장</span>'); } afterGate(); }
+try{ const tk=sessionStorage.getItem('ys_tok'); if(tk){ TOKEN=tk; ROLE=sessionStorage.getItem('ys_role')||''; SNAME=sessionStorage.getItem('ys_name')||''; setTimeout(enter,0); } }catch(e){}
+$('gateForm').addEventListener('submit',async e=>{ e.preventDefault(); const v=$('gatePw').value.trim(); if(!v) return;
+  let h=''; try{ h=await sha(v); }catch(err){ $('gateMsg').textContent='이 브라우저에서는 암호 확인을 할 수 없습니다. https 주소로 열어 주세요.'; return; }
+  $('gateMsg').textContent='확인 중...';
+  try{ const r=await fetch(srv()+'/whoami',{headers:{'X-Gate':h}}); const j=await r.json().catch(()=>({}));
+    if(r.status===401){ $('gateMsg').textContent='암호 또는 개인 코드가 맞지 않습니다.'; $('gatePw').value=''; $('gatePw').focus(); return; }
+    if(!r.ok||!j.role){ $('gateMsg').textContent='서버 확인 실패: '+(j.error||('HTTP '+r.status)); return; }
+    TOKEN=h; ROLE=j.role; SNAME=j.name||''; try{ sessionStorage.setItem('ys_tok',h); sessionStorage.setItem('ys_role',ROLE); sessionStorage.setItem('ys_name',SNAME); }catch(err){}
+    $('gateMsg').textContent=''; enter();
+  }catch(err){ $('gateMsg').textContent='서버에 연결할 수 없습니다. 인터넷 연결을 확인해 주세요.'; } });
+$('btnLogout').addEventListener('click',()=>{ try{ ['ys_tok','ys_role','ys_name'].forEach(k=>sessionStorage.removeItem(k)); }catch(e){} location.reload(); });
+
+async function api(path,opt={}){
+  const headers=Object.assign({'X-Gate':TOKEN},opt.headers||{});
+  if(opt.json){ headers['Content-Type']='application/json'; opt.body=JSON.stringify(opt.json); }
+  const r=await fetch(srv()+path,{method:opt.method||'GET',headers,body:opt.body});
+  if(opt.blob){ if(!r.ok){ let j={}; try{ j=await r.json(); }catch(e){} throw new Error(j.error||('HTTP '+r.status)); } return await r.blob(); }
+  let j=null; const t=await r.text(); try{ j=JSON.parse(t); }catch(e){ j={error:'서버 응답을 해석하지 못했습니다: '+t.slice(0,120)}; }
+  if(!r.ok) throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+
+
+document.querySelectorAll('.navbtn[data-v]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.v)));
+function showView(v){ document.querySelectorAll('.navbtn[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v)); ['exam','records'].forEach(k=>$('v-'+k).hidden=k!==v); if(v==='records') loadRecords(); }
+
+// ---------- 문제 세트 (제시문 면접 프로그램의 서버 설정에서 oral 세트만) ----------
+let SETS=[], STUDENTS=[], IMG={};
+async function afterGate(){
+  const sel=$('mvStudent');
+  if(isStudent()){ sel.innerHTML='<option>'+esc(SNAME)+'</option>'; sel.disabled=true; }
+  else{ try{ STUDENTS=(await api('/students')).students||[]; }catch(e){ STUDENTS=[]; } sel.innerHTML=STUDENTS.map(s=>'<option>'+esc(s.name)+'</option>').join('')+'<option value="__t">(선생님 시연)</option>'; $('rcStudent').innerHTML='<option value="">전체</option>'+STUDENTS.map(s=>'<option>'+esc(s.name)+'</option>').join(''); }
+  try{ const c=await api('/config'); SETS=((c.config||c).sets||[]).filter(s=>s.oral&&(s.qimageIds||[]).length); }catch(e){ $('mvSetNote').textContent='문제 목록을 불러오지 못했습니다: '+e.message; return; }
+  SETS.sort((a,b)=>a.name.localeCompare(b.name,'ko',{numeric:true}));
+  $('mvSet').innerHTML=SETS.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('')||'<option value="">세트 없음</option>';
+  $('mvSetNote').textContent=SETS.length?`${SETS.length}개 세트. 세트에 저장된 시간: 구상 ${SETS[0].tprep}분, 답변 ${SETS[0].trec}분`:'구술용 수학 세트가 없습니다. 제시문 면접 프로그램의 설정 탭에서 "세트묶음_서울대_수학구술" 파일을 먼저 불러오세요.';
+  showPrev();
+}
+$('mvSet').addEventListener('change',showPrev); $('mvStudent').addEventListener('change',showPrev);
+async function showPrev(){ const name=curName(); const s=SETS[+$('mvSet').value]; if(!s){ $('mvPrev').textContent=''; return; } try{ const r=await api('/mv/sessions'+(isStudent()?'':'?student='+encodeURIComponent(name))); const same=(r.sessions||[]).filter(x=>x.set===s.name); $('mvPrev').textContent=same.length?`이 문제를 ${same.length}번 연습했습니다 (최근 ${same[0].date}, ${same[0].score??'-'}점). 다른 문제를 고르는 편이 좋습니다.`:''; }catch(e){ $('mvPrev').textContent=''; } }
+function curName(){ return isStudent()?SNAME:($('mvStudent').value==='__t'?'선생님':$('mvStudent').value); }
+async function idImages(ids){ const out=[]; for(const id of (ids||[])){ if(!IMG[id]){ try{ IMG[id]=(await api('/img/'+id)).data; }catch(e){ continue; } } out.push(IMG[id]); } return out; }
+
+// ---------- 진행 ----------
+const IV={on:false,phase:'',set:null,cfg:{},imgs:[],sols:[],hist:[],usedSec:0,segStart:null,clockT:null,stream:null,rec:null,chunks:[],ctx:null,an:null,vuT:null,ansT:null,segT0:0,hints:0,probes:0,sub:'',busy:false,ended:false,photos:[],name:'',prepLeft:0,prepT:null,earlyTap:0};
+const AUD=new Audio(); let ttsOk=true;
+const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+const fmt=s=>{ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+const fmt2=s=>{ s=Math.max(0,Math.round(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function elapsed(){ return IV.usedSec+(IV.segStart?(Date.now()-IV.segStart)/1000:0); }
+function remaining(){ return IV.cfg.ansSec-elapsed(); }
+function clockRun(on){ if(on&&!IV.segStart) IV.segStart=Date.now(); if(!on&&IV.segStart){ IV.usedSec+=(Date.now()-IV.segStart)/1000; IV.segStart=null; } }
+function paintClock(){ const r=IV.phase==='prep'?IV.prepLeft:remaining(); const el=$('rClock'); el.textContent=fmt2(r); el.classList.toggle('warn',r<60&&r>=20); el.classList.toggle('crit',r<20); }
+function setState(t,live){ $('rState').textContent=t; $('rState').classList.toggle('live',!!live); }
+
+$('mvStart').addEventListener('click',start);
+async function start(){
+  const s=SETS[+$('mvSet').value]; if(!s){ $('mvMsg').textContent='문제 세트가 없습니다.'; return; }
+  IV.cfg={prepSec:Math.round(+$('mvPrep').value*60),ansSec:Math.round(+$('mvAns').value*60),prepMin:+$('mvPrep').value,ansMin:+$('mvAns').value,voice:$('mvVoice').value,silence:+$('mvSilence').value};
+  try{ AUD.src=SILENT; AUD.muted=true; await Promise.race([AUD.play().catch(()=>{}),wait(800)]); AUD.pause(); AUD.muted=false; }catch(e){}
+  try{ if(window.speechSynthesis){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } }catch(e){}
+  $('mvMsg').textContent='마이크 연결과 문제지 불러오기...';
+  try{ IV.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false}); }catch(e){ $('mvMsg').textContent='마이크를 쓸 수 없습니다: '+e.message; return; }
+  try{ IV.ctx=new (window.AudioContext||window.webkitAudioContext)(); IV.an=IV.ctx.createAnalyser(); IV.an.fftSize=1024; IV.ctx.createMediaStreamSource(IV.stream).connect(IV.an); }catch(e){ IV.an=null; }
+  IV.imgs=await idImages(s.qimageIds); IV.sols=await idImages(s.solImageIds);
+  if(!IV.imgs.length){ $('mvMsg').textContent='문제지 그림을 불러오지 못했습니다.'; return; }
+  Object.assign(IV,{on:true,set:s,hist:[],usedSec:0,segStart:null,hints:0,probes:0,sub:'',busy:false,ended:false,photos:[],name:curName(),earlyTap:0});
+  $('mvMsg').textContent=''; $('ivRun').hidden=false; $('rName').textContent=IV.name; $('rSub').textContent=''; $('rHint').textContent=''; $('rQ').textContent=''; $('rQ').classList.remove('follow');
+  $('rImgs').innerHTML=IV.imgs.map(d=>`<img src="${d}">`).join(''); $('rImgs').hidden=false;
+  ['rRepeat','rStuck','rDone'].forEach(id=>$(id).hidden=true); $('rEarly').hidden=false; $('rEnd').textContent='종료';
+  try{ if(document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen(); }catch(e){}
+  // 구상
+  IV.phase='prep'; IV.prepLeft=IV.cfg.prepSec; $('rPhase').textContent='구상'; setState('문제를 읽고 풀이를 구상하세요. 종이에 풀어도 됩니다.'); $('rA').textContent=''; paintClock();
+  await new Promise(res=>{ IV.prepT=setInterval(()=>{ IV.prepLeft-=1; paintClock(); if(IV.prepLeft<=0||IV.phase!=='prep'){ clearInterval(IV.prepT); res(); } },1000); IV._prepRes=res; });
+  if(!IV.on) return;
+  beginAnswer();
+}
+$('rEarly').addEventListener('click',()=>{ if(IV.phase!=='prep') return; IV.earlyTap++; if(IV.earlyTap===1){ $('rHint').textContent='한 번 더 누르면 바로 답변을 시작합니다.'; setTimeout(()=>{ IV.earlyTap=0; $('rHint').textContent=''; },3000); return; } IV.phase='answer'; clearInterval(IV.prepT); if(IV._prepRes) IV._prepRes(); });
+async function beginAnswer(){
+  IV.phase='answer'; $('rPhase').textContent='답변'; $('rEarly').hidden=true; $('rRepeat').hidden=false; $('rStuck').hidden=false; $('rDone').hidden=false; $('rEnd').textContent='구술 종료'; $('rHint').textContent='';
+  $('rImgs').classList.add('small'); paintClock(); IV.clockT=setInterval(paintClock,250);
+  const first='준비되셨으면 첫 번째 소문항부터 풀이를 설명해 주세요. 답을 먼저 말하고 과정을 설명해도 좋습니다.';
+  await prof(first,'open');
+  await record();
+}
+let lastSpoken='';
+async function speak(text){
+  lastSpoken=text; $('rRepeat').disabled=true; const mode=IV.cfg.voice;
+  if(mode==='server'&&ttsOk){ try{ const b=await api('/iv/tts',{method:'POST',json:{text},blob:true}); if(!IV.on) return; AUD.src=URL.createObjectURL(b); await new Promise(res=>{ AUD.onended=res; AUD.onerror=res; AUD.play().catch(res); }); $('rRepeat').disabled=false; return; }catch(e){ ttsOk=false; $('rHint').textContent='서버 목소리를 쓸 수 없어 기기 목소리로 읽습니다: '+e.message; } }
+  if(mode!=='none'&&window.speechSynthesis){ try{ await new Promise(res=>{ const u=new SpeechSynthesisUtterance(text); u.lang='ko-KR'; u.rate=0.95; const v=speechSynthesis.getVoices().find(v=>/^ko/i.test(v.lang)); if(v) u.voice=v; u.onend=res; u.onerror=res; speechSynthesis.cancel(); speechSynthesis.speak(u); setTimeout(res,Math.max(4000,text.length*220)); }); }catch(e){} }
+  else await wait(Math.min(6000,1500+text.length*60));
+  $('rRepeat').disabled=false;
+}
+async function prof(text,kind){
+  clockRun(true); setState(kind==='hint'?'교수의 힌트':kind==='probe'?'교수의 질문':'교수'); $('rQ').textContent=text; $('rQ').classList.toggle('follow',kind==='probe'||kind==='hint');
+  IV.hist.push({role:'prof',kind,text}); await speak(text);
+}
+$('rRepeat').addEventListener('click',async()=>{ if(!lastSpoken||!IV.on||(IV.rec&&IV.rec.state==='recording')) return; await speak(lastSpoken); });
+function rms(){ if(!IV.an) return 0; const a=new Uint8Array(IV.an.fftSize); IV.an.getByteTimeDomainData(a); let s=0; for(const v of a){ const d=(v-128)/128; s+=d*d; } return Math.sqrt(s/a.length); }
+let trigger='done';
+function record(){
+  return new Promise(res=>{
+    if(!IV.on||IV.ended){ res(); return; }
+    IV.chunks=[]; const mt=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(m=>MediaRecorder.isTypeSupported(m));
+    try{ IV.rec=new MediaRecorder(IV.stream,mt?{mimeType:mt,audioBitsPerSecond:48000}:{}); }catch(e){ IV.rec=new MediaRecorder(IV.stream); }
+    IV.rec.ondataavailable=e=>{ if(e.data.size) IV.chunks.push(e.data); };
+    IV.rec.onstop=async()=>{ const blob=new Blob(IV.chunks,{type:IV.rec.mimeType||'audio/webm'}); const sec=Math.round((Date.now()-IV.segT0)/1000); clearInterval(IV.ansT); clearInterval(IV.vuT); $('rVu').style.width='0'; await afterSeg(blob,sec,trigger); res(); };
+    trigger='done'; IV.rec.start(1000); IV.segT0=Date.now(); clockRun(true); setState('풀이를 설명하세요 (녹음 중)',true); $('rA').classList.remove('dim'); $('rDone').disabled=false; $('rStuck').disabled=false;
+    let spoke=0,quiet=0,floor=null,last=Date.now();
+    IV.vuT=setInterval(()=>{ const v=rms(); if(floor===null) floor=v; floor=Math.min(floor*1.02+0.0005,Math.max(floor,v*0.9)); const th=Math.max(0.012,floor*2.6); $('rVu').style.width=Math.min(100,v*700)+'%'; $('rVu').style.background=v>th?'#4caf50':'#555'; const now=Date.now(); const dt=(now-last)/1000; last=now; if(v>th){ spoke+=dt; quiet=0; } else quiet+=dt; },80);
+    IV.ansT=setInterval(()=>{ const el=(Date.now()-IV.segT0)/1000; $('rA').textContent=fmt(el);
+      $('rHint').textContent=IV.cfg.silence&&spoke>=3&&quiet>2?`침묵 ${Math.round(quiet)}초 (${IV.cfg.silence}초면 교수가 개입)`:'';
+      if(IV.cfg.silence&&spoke>=3&&quiet>=IV.cfg.silence){ trigger='silence'; stopSeg(); }
+      else if(remaining()<=0) { trigger='done'; stopSeg(); } },250);
+  });
+}
+function stopSeg(){ if(IV.rec&&IV.rec.state==='recording'){ $('rDone').disabled=true; $('rStuck').disabled=true; try{ IV.rec.stop(); }catch(e){} } }
+$('rDone').addEventListener('click',()=>{ trigger='done'; stopSeg(); });
+$('rStuck').addEventListener('click',()=>{ trigger='stuck'; stopSeg(); });
+$('rEnd').addEventListener('click',()=>{ if(!IV.on) return; if(IV.phase==='prep'){ if(!confirm('구상을 멈추고 연습을 끝낼까요? 기록은 남지 않습니다.')) return; IV.on=false; IV.phase=''; clearInterval(IV.prepT); if(IV._prepRes) IV._prepRes(); teardown(); $('ivRun').hidden=true; return; }
+  if(!confirm('구술을 여기서 마칠까요? 지금까지의 설명으로 피드백을 만듭니다.')) return; IV.ended=true; if(IV.rec&&IV.rec.state==='recording') stopSeg(); else if(!IV.busy) finish('직접 종료'); });
+function audExt(type){ type=(type||'').toLowerCase(); if(/mp4|m4a|aac|quicktime/.test(type)) return 'mp4'; if(/ogg/.test(type)) return 'ogg'; if(/wav/.test(type)) return 'wav'; return 'webm'; }
+async function transcribe(blob){ if(!blob||blob.size<1000) return ''; const fd=new FormData(); fd.append('file',blob,'answer.'+audExt(blob.type)); fd.append('language','ko'); fd.append('prompt','수학 구술 풀이 설명. 함수, 수열, 확률, 경우의 수, 부등식, 그래프, 정수, 최댓값, 최솟값.'); const r=await api('/transcribe',{method:'POST',body:fd}); return (r.text||'').trim(); }
+async function afterSeg(blob,sec,trig){
+  clockRun(false); IV.busy=true; setState('설명을 듣고 있습니다...'); $('rHint').textContent='';
+  let text=''; try{ text=await transcribe(blob); }catch(e){ $('rHint').textContent='전사 실패: '+e.message; }
+  IV.hist.push({role:'stu',text:text||'(들리지 않음)',sec,trigger:trig});
+  IV.busy=false;
+  if(!IV.on) return;
+  if(IV.ended) return finish('직접 종료');
+  if(remaining()<=0){ await prof('시간이 다 되었습니다. 수고하셨습니다.','close'); return finish('시간 종료'); }
+  setState('교수가 생각하고 있습니다...');
+  let r;
+  try{ r=await api('/mv/next',{method:'POST',json:{setName:IV.set.name,images:IV.imgs,solImages:IV.sols,history:IV.hist.slice(0,-1).slice(-12),last:text,trigger:trig,segSec:sec,remainingSec:Math.round(remaining()),totalSec:IV.cfg.ansSec,hints:IV.hints,probes:IV.probes}}); }
+  catch(e){ r={action:'next',say:'네, 계속 설명해 주세요.'}; $('rHint').textContent='교수 역할 판단 실패 (계속 진행): '+e.message; }
+  if(!IV.on) return;
+  if(IV.ended) return finish('직접 종료');
+  if(r.sub) $('rSub').textContent='소문항 '+r.sub;
+  if(r.action==='hint') IV.hints++; if(r.action==='probe') IV.probes++;
+  await prof(r.say||'계속해 주세요.',r.action);
+  if(r.action==='close') return finish('교수 마무리');
+  await record();
+}
+function teardown(){ clockRun(false); clearInterval(IV.clockT); clearInterval(IV.ansT); clearInterval(IV.vuT); try{ speechSynthesis&&speechSynthesis.cancel(); }catch(e){} try{ AUD.pause(); }catch(e){} try{ IV.stream.getTracks().forEach(t=>t.stop()); }catch(e){} try{ IV.ctx&&IV.ctx.close(); }catch(e){} try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} }
+let REC=null;
+async function finish(why){
+  if(!IV.on) return; IV.on=false; IV.ended=true; teardown();
+  const dur=Math.round(elapsed());
+  REC={kind:'math-oral',name:IV.name,set:IV.set.name,date:new Date().toLocaleString('ko-KR'),durationSec:dur,endWhy:why,settings:IV.cfg,hints:IV.hints,probes:IV.probes,history:IV.hist,qimageIds:IV.set.qimageIds,photos:[],feedback:null};
+  $('ivRun').hidden=true; $('mvSetup').hidden=true; $('mvResult').hidden=false; $('mvFb').innerHTML=''; $('mvPhotos').value='';
+  if(!IV.hist.some(h=>h.role==='stu'&&h.text!=='(들리지 않음)')){ $('mvResMsg').textContent='설명이 녹음되지 않아 기록하지 않았습니다.'; return; }
+  await evaluate(false);
+}
+async function evaluate(re){
+  $('mvResMsg').textContent=(re?'사진을 포함해 ':'')+'AI 피드백을 만드는 중... (30초~1분)'; $('mvReEval').disabled=true;
+  try{
+    if(re){ const fs=[...($('mvPhotos').files||[])].slice(0,6); const ph=[]; for(const f of fs){ const d=await shrink(f,1600,0.8); if(d) ph.push(d); } if(ph.length) REC.photos=ph; }
+    REC.feedback=await api('/mv/feedback',{method:'POST',json:{setName:REC.set,name:REC.name,settings:REC.settings,durationSec:REC.durationSec,hints:REC.hints,probes:REC.probes,history:REC.history,images:IV.imgs,solImages:IV.sols,photos:REC.photos}});
+    if(REC.id){ try{ await api('/mv/sessions/'+encodeURIComponent(REC.id),{method:'DELETE'}); }catch(e){} }
+    const r=await api('/mv/sessions',{method:'POST',json:REC}); REC.id=r.id; $('mvResMsg').textContent='저장되었습니다.'+(REC.photos.length?' (풀이 사진 '+REC.photos.length+'장 포함)':'');
+  }catch(e){ $('mvResMsg').textContent='실패: '+e.message; if(!REC.id){ try{ const r=await api('/mv/sessions',{method:'POST',json:REC}); REC.id=r.id; }catch(e2){} } }
+  $('mvReEval').disabled=false; $('mvFb').innerHTML=fbHtml(REC);
+}
+function shrink(file,max,q){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ const r=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*r); c.height=Math.round(img.height*r); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(img.src); res(c.toDataURL('image/jpeg',q)); }; img.onerror=()=>res(null); img.src=URL.createObjectURL(file); }); }
+$('mvReEval').addEventListener('click',()=>{ if(!REC) return; if(!$('mvPhotos').files.length&&!confirm('사진이 없습니다. 그래도 다시 평가할까요?')) return; evaluate(true); });
+$('mvAgain').addEventListener('click',()=>{ $('mvResult').hidden=true; $('mvSetup').hidden=false; showPrev(); });
+$('mvPrint').addEventListener('click',()=>window.print());
+
+// ---------- 피드백 ----------
+function fbHtml(rec){
+  const f=rec.feedback||{}; const o=f.overall||{};
+  const head=`<p class="note">${esc(rec.name)} | ${esc(rec.set)} | ${esc(rec.date)} | 구상 ${rec.settings.prepMin}분, 답변 ${rec.settings.ansMin}분 설정, 실제 답변 ${fmt(rec.durationSec||0)} | 힌트 ${rec.hints}회, 교수 질의 ${rec.probes}회</p>`;
+  const hist=`<h3>대화 기록</h3>`+rec.history.map(h=>`<div class="turn ${h.role}"><div class="${h.role==='prof'?'q':'a'}"><span class="t">${h.role==='prof'?(h.kind==='hint'?'힌트':h.kind==='probe'?'교수 질문':'교수'):'학생'+(h.sec?' '+fmt(h.sec):'')}</span>${esc(h.text)}</div></div>`).join('');
+  const photos=(rec.photos||[]).length?'<h3>풀이 사진</h3><div class="photos">'+rec.photos.map(d=>`<img src="${d}">`).join('')+'</div>':'';
+  if(!f.overall) return head+'<p class="err">AI 피드백이 없습니다.</p>'+hist+photos;
+  return head+`<div class="score"><span class="big">${esc(o.score)}</span><span class="note">/ 100</span><span class="lv">${esc(o.level||'')}</span></div><p>${esc(o.summary||'')}</p>
+  <h3>영역별 평가</h3><div class="areas">${(f.areas||[]).map(a=>`<div class="area"><b>${esc(a.name)}</b><span class="n">${esc(a.score)}</span><p>${esc(a.comment||'')}</p></div>`).join('')}</div>
+  <h3>소문항별</h3><table class="rtab"><tr><th>소문항</th><th>판정</th><th>학생이 말한 답</th><th>정답</th><th>과정</th></tr>${(f.sub_questions||[]).map(s=>`<tr><td>${esc(s.sub)}</td><td><b>${esc(s.verdict)}</b></td><td>${esc(s.answer_said||'')}</td><td>${esc(s.correct||'')}</td><td>${esc(s.note||'')}</td></tr>`).join('')}</table>
+  ${f.interaction?'<h3>질의와 힌트 대응</h3><p>'+esc(f.interaction.comment||'')+'</p>':''}
+  <h3>잘한 점</h3><ul>${(f.strengths||[]).map(s=>'<li>'+esc(s)+'</li>').join('')}</ul>
+  <h3>고칠 점</h3><ol>${(f.improvements||[]).map(s=>'<li>'+esc(s)+'</li>').join('')}</ol>
+  ${(f.next_tasks||[]).length?'<h3>다음 연습까지</h3><ul>'+f.next_tasks.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>':''}`+hist+photos;
+}
+
+// ---------- 기록 ----------
+async function loadRecords(){
+  $('rcMsg').textContent='불러오는 중...'; $('rcDetail').hidden=true;
+  try{ const st=isStudent()?'':$('rcStudent').value; const r=await api('/mv/sessions'+(st?'?student='+encodeURIComponent(st):''));
+    const rows=r.sessions||[]; $('rcTable').querySelector('tbody').innerHTML=rows.map(s=>`<tr data-id="${esc(s.id)}"><td>${esc(s.date||'')}</td><td>${esc(s.name)}</td><td>${esc(s.set||'')}</td><td>${s.sec!=null?fmt(s.sec):''}</td><td>${s.hints??''}</td><td>${s.score??'-'}</td><td>${esc(s.level||'')}</td></tr>`).join('')||'<tr><td colspan="7" class="note">기록이 없습니다.</td></tr>';
+    $('rcMsg').textContent=rows.length+'건';
+  }catch(e){ $('rcMsg').textContent='실패: '+e.message; }
+}
+$('rcReload').addEventListener('click',loadRecords); $('rcStudent').addEventListener('change',loadRecords);
+let RC=null;
+$('rcTable').addEventListener('click',async e=>{ const tr=e.target.closest('tr[data-id]'); if(!tr) return; $('rcMsg').textContent='여는 중...';
+  try{ RC=await api('/mv/sessions/'+encodeURIComponent(tr.dataset.id)); $('rcTitle').textContent=RC.name+' | '+RC.set; $('rcFb').innerHTML=fbHtml(RC); $('rcDetail').hidden=false; $('rcMsg').textContent=''; $('rcDetail').scrollIntoView({behavior:'smooth'}); }catch(err){ $('rcMsg').textContent='실패: '+err.message; } });
+$('rcPrint').addEventListener('click',()=>window.print());
+$('rcDel').addEventListener('click',async()=>{ if(!RC||!confirm('이 기록을 지울까요?')) return; try{ await api('/mv/sessions/'+encodeURIComponent(RC.id),{method:'DELETE'}); RC=null; loadRecords(); }catch(e){ $('rcMsg').textContent='삭제 실패: '+e.message; } });
+})();
+</script>
+</body>
+</html>
